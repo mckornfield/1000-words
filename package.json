@@ -6,7 +6,7 @@
   "description": "Spaced-repetition app for the 1000 most common words in a language",
   "packageManager": "pnpm@11.5.2",
   "engines": {
-    "node": ">=20"
+    "node": ">=22.13"
   },
   "scripts": {
     "build": "pnpm -r build",
