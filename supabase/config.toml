@@ -1,0 +1,28 @@
+# Minimal Supabase local config. If `supabase start` rejects this on your CLI
+# version, run `supabase init` to regenerate a full config.toml, then keep the
+# migrations under supabase/migrations/ — they are the source of truth.
+project_id = "1000-words"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+
+[auth.email]
+enable_signup = true
+# No email confirmation locally so dev signups log in immediately.
+enable_confirmations = false

@@ -1,0 +1,24 @@
+{
+  "name": "1000-words",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Spaced-repetition app for the 1000 most common words in a language",
+  "packageManager": "pnpm@11.5.2",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r typecheck",
+    "dev": "pnpm --filter @1000words/app dev"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.4.1",
+    "typescript": "~5.9.0",
+    "typescript-eslint": "^8.60.1"
+  }
+}
