@@ -49,7 +49,10 @@ for (const file of deckFiles) {
     fail(`${file}: ${parsed.error.message}`);
     continue;
   }
+  const seen = new Set<string>();
   for (const card of parsed.data) {
+    if (seen.has(card.id)) fail(`${file}: duplicate card id ${card.id}`);
+    seen.add(card.id);
     if (!existsSync(join(audioRoot, card.audio.replace(/^assets\/audio\//, "")))) {
       fail(`${file}: missing audio for ${card.id} (${card.audio})`);
     }

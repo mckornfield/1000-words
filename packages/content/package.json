@@ -12,9 +12,13 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit",
-    "validate": "tsx scripts/validate.ts"
+    "validate": "tsx scripts/validate.ts",
+    "generate": "tsx scripts/generate.ts",
+    "sync": "tsx scripts/sync-to-app.ts"
   },
   "dependencies": {
+    "dotenv": "^17.2.0",
+    "openai": "^6.42.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {

@@ -156,3 +156,9 @@ supabase/.temp
 # Playwright
 test-results/
 playwright-report/
+
+# Generated content (decks + mp3s) — produced by packages/content/scripts/generate.ts
+/packages/content/data/
+/packages/content/audio/
+/packages/app/public/assets/data/
+/packages/app/public/assets/audio/
