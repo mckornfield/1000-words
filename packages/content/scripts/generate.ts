@@ -2,8 +2,9 @@
  * Content generation pipeline (task A3).
  *
  * Reads a top-1000 frequency list, drafts translations + example sentences via
- * Claude, and (optionally) synthesizes one ElevenLabs mp3 per card. Writes the
- * resulting deck to `data/<langPair>.json` and audio to `audio/<lang>/<id>.mp3`.
+ * an OpenAI-compatible chat completions endpoint, and (optionally) synthesizes
+ * one ElevenLabs mp3 per card. Writes the deck to `data/<langPair>.json` and
+ * audio to `audio/<lang>/<id>.mp3`.
  *
  * Resume-aware: cards already present in the existing deck are skipped, as are
  * mp3s already on disk. Re-run safely after API failures.
@@ -11,11 +12,13 @@
  * Usage:
  *   pnpm --filter @1000words/content generate -- --lang-pair en-es [--limit 1000] [--audio] [--batch-size 25] [--concurrency 4]
  *
- * Required env (in packages/content/.env): ANTHROPIC_API_KEY.
+ * Required env (in packages/content/.env): OPENAI_API_KEY.
+ * Optional: OPENAI_BASE_URL (point at any OpenAI-compatible endpoint), LLM_MODEL
+ *   (defaults to gpt-4o-mini).
  * Required when --audio is passed: ELEVENLABS_API_KEY + ELEVENLABS_VOICE_<LANG>.
  */
 import "dotenv/config";
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import { LANG_PAIRS, LangPairSchema, type Card, type LangPair } from "../src/schema";
 import { mapConcurrent } from "./lib/concurrency";
 import { audioRelPath, cardId, loadDeck, saveDeck } from "./lib/deck";
@@ -61,9 +64,10 @@ async function main(): Promise<void> {
   const args = parseArgs();
   const cfg = LANG_PAIR_CONFIGS[args.langPair];
 
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (!anthropicKey) throw new Error("ANTHROPIC_API_KEY is not set (see .env.example)");
-  const client = new Anthropic({ apiKey: anthropicKey });
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error("OPENAI_API_KEY is not set (see .env.example)");
+  }
+  const client = new OpenAI();
 
   let elevenLabsKey: string | undefined;
   let voiceId: string | undefined;
