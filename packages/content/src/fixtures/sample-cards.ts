@@ -34,6 +34,7 @@ export const SAMPLE_CARDS: Card[] = [
     partOfSpeech: "interjection",
     exampleSentence: "你好，很高兴认识你。",
     exampleTranslation: "Hello, nice to meet you.",
+    pronunciation: "nǐ hǎo",
     audio: "assets/audio/zh/zh-0001.mp3",
   },
 ];
