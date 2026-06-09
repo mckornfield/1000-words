@@ -157,8 +157,7 @@ supabase/.temp
 test-results/
 playwright-report/
 
-# Generated content (decks + mp3s) — produced by packages/content/scripts/generate.ts
-/packages/content/data/
-/packages/content/audio/
+# Synced copies under app/public/ are always rebuilt by sync-to-app.ts at prebuild.
+# The source decks + audio under packages/content/{data,audio}/ are checked in.
 /packages/app/public/assets/data/
 /packages/app/public/assets/audio/

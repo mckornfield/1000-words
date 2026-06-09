@@ -25,6 +25,7 @@ import { audioRelPath, cardId, loadDeck, saveDeck } from "./lib/deck";
 import { draftBatch } from "./lib/draft";
 import { hasAudio, synthesize } from "./lib/audio";
 import { loadFrequencyList } from "./lib/frequency";
+import { pronunciationFor } from "./lib/pronunciation";
 import { LANG_PAIR_CONFIGS } from "./lib/types";
 
 interface Args {
@@ -104,6 +105,7 @@ async function main(): Promise<void> {
       const cards = await draftBatch(client, cfg, batch.map((b) => b.word));
       for (const [i, entry] of batch.entries()) {
         const d = cards[i]!;
+        const pronunciation = pronunciationFor(args.langPair, d.word);
         existingById.set(entry.id, {
           id: entry.id,
           langPair: args.langPair,
@@ -112,6 +114,7 @@ async function main(): Promise<void> {
           partOfSpeech: d.partOfSpeech,
           exampleSentence: d.exampleSentence,
           exampleTranslation: d.exampleTranslation,
+          ...(pronunciation ? { pronunciation } : {}),
           audio: audioRelPath(cfg, entry.id),
         });
       }

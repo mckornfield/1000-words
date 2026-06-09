@@ -30,6 +30,12 @@ export const CardSchema = z.object({
   exampleSentence: z.string().min(1),
   /** The English translation of the example sentence. */
   exampleTranslation: z.string().min(1),
+  /**
+   * Optional pronunciation hint for scripts where the written form doesn't tell
+   * the learner how to say it — pinyin (with tone marks) for Chinese, etc.
+   * Omitted for languages whose orthography already encodes pronunciation (Spanish).
+   */
+  pronunciation: z.string().min(1).optional(),
   /** App-relative path to the bundled mp3, e.g. "assets/audio/es/es-0001.mp3". */
   audio: z.string().regex(/^assets\/audio\/[a-z]{2}\/.+\.mp3$/),
 });
