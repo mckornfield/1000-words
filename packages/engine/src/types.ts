@@ -20,6 +20,7 @@ export interface FsrsState {
   difficulty: number;
   elapsedDays: number;
   scheduledDays: number;
+  learningSteps: number;
   reps: number;
   lapses: number;
   state: number;
