@@ -1,6 +1,8 @@
-import type { CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import { navigate } from "../../lib/router";
 import type { DashboardData } from "../../data/account/repository";
+import { loadWordsForLessonId, type WordEntry } from "../../lib/wordData";
+import { Breadcrumb } from "../shared/Breadcrumb";
 
 interface LessonDetailProps {
   dashboardData: DashboardData;
@@ -9,6 +11,15 @@ interface LessonDetailProps {
 
 export function LessonDetail({ dashboardData, lessonId }: LessonDetailProps) {
   const lesson = dashboardData.lessons.find((l) => l.lessonId === lessonId);
+  const [words, setWords] = useState<WordEntry[]>([]);
+  const [showAllWords, setShowAllWords] = useState(false);
+
+  useEffect(() => {
+    if (!lesson) return;
+    loadWordsForLessonId(lessonId, lesson.difficulty, 25)
+      .then(setWords)
+      .catch(() => setWords([]));
+  }, [lessonId, lesson]);
 
   if (!lesson) {
     return (
@@ -30,16 +41,13 @@ export function LessonDetail({ dashboardData, lessonId }: LessonDetailProps) {
         ? "var(--status-warn)"
         : "var(--status-muted)";
 
-  // Mock word list - in production, this would come from the lesson data
-  const mockWords = Array.from({ length: 25 }, (_, i) => ({
-    word: `Palabra ${i + 1}`,
-    translation: `Translation ${i + 1}`,
-    difficulty: (i % 3) as 0 | 1 | 2,
-  }));
+  const visibleWords = showAllWords ? words : words.slice(0, 10);
+  const difficultyLabel = lesson.difficulty === "starter" ? "Perfect for beginners" : lesson.difficulty === "core" ? "Essential vocabulary" : "Advanced terms";
 
   return (
-    <section className="screen lesson-detail-screen swiss">
+    <section className="screen lesson-detail-screen swiss page-enter">
       <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "1rem" }}>
+        <Breadcrumb currentPath="/lessons/:lessonId" params={{ lessonId }} labels={{ lessonTitle: lesson.title }} />
         <header className="topbar" style={{ marginBottom: "1.5rem" }}>
           <button onClick={() => navigate("/lessons")}>← Back</button>
           <h1>{lesson.title}</h1>
@@ -148,43 +156,54 @@ export function LessonDetail({ dashboardData, lessonId }: LessonDetailProps) {
 
         {/* Word List Section */}
         <div className="bento-cell" style={{ marginBottom: "1.5rem" }}>
-          <h2 style={{ marginTop: 0 }}>Words in This Lesson</h2>
-          <p style={{ color: "var(--text-secondary)", marginBottom: "1rem" }}>
-            Total: {mockWords.length} words · {lesson.difficulty === "starter" ? "Perfect for beginners" : lesson.difficulty === "core" ? "Essential vocabulary" : "Advanced terms"}
-          </p>
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr style={{ borderBottom: "2px solid var(--border)" }}>
-                  <th style={{ padding: "0.75rem", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)" }}>
-                    Spanish
-                  </th>
-                  <th style={{ padding: "0.75rem", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)" }}>
-                    English
-                  </th>
-                  <th style={{ padding: "0.75rem", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)" }}>
-                    Difficulty
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockWords.slice(0, 10).map((item, idx) => (
-                  <tr key={idx} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-                    <td style={{ padding: "0.75rem" }}>{item.word}</td>
-                    <td style={{ padding: "0.75rem" }}>{item.translation}</td>
-                    <td style={{ padding: "0.75rem" }}>
-                      <span style={{ fontSize: "0.85rem", color: item.difficulty === 0 ? "var(--status-ok)" : item.difficulty === 1 ? "var(--status-warn)" : "var(--accent)" }}>
-                        {item.difficulty === 0 ? "Easy" : item.difficulty === 1 ? "Medium" : "Hard"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.75rem" }}>
+            <h2 style={{ marginTop: 0, marginBottom: 0 }}>Words in This Lesson</h2>
+            {words.length > 0 && (
+              <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
+                {words.length} words · {difficultyLabel}
+              </span>
+            )}
           </div>
-          <p style={{ marginTop: "1rem", fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-            Showing first 10 of {mockWords.length} words. Complete the lesson to master all words.
-          </p>
+          {words.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "2rem", color: "var(--muted)", fontSize: "0.9rem" }}>
+              Loading vocabulary…
+            </div>
+          ) : (
+            <>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ borderBottom: "2px solid var(--border)" }}>
+                      <th style={{ padding: "0.6rem 0.75rem", textAlign: "left", fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-secondary)" }}>Spanish</th>
+                      <th style={{ padding: "0.6rem 0.75rem", textAlign: "left", fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-secondary)" }}>English</th>
+                      <th style={{ padding: "0.6rem 0.75rem", textAlign: "left", fontWeight: 700, fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-secondary)" }}>Part of Speech</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {visibleWords.map((item) => (
+                      <tr key={item.id} style={{ borderBottom: "1px solid var(--border-subtle)" }}>
+                        <td style={{ padding: "0.65rem 0.75rem", fontWeight: 600 }}>{item.word}</td>
+                        <td style={{ padding: "0.65rem 0.75rem", color: "var(--text-secondary)" }}>{item.translation}</td>
+                        <td style={{ padding: "0.65rem 0.75rem" }}>
+                          <span style={{ fontSize: "0.72rem", color: "var(--muted)", background: "var(--surface-raised)", border: "1px solid var(--border-subtle)", borderRadius: "999px", padding: "0.15em 0.55em", fontWeight: 600 }}>
+                            {item.partOfSpeech}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {words.length > 10 && (
+                <button
+                  onClick={() => setShowAllWords((v) => !v)}
+                  style={{ marginTop: "0.75rem", background: "none", color: "var(--text-secondary)", border: "1px solid var(--border)", fontSize: "0.8rem", padding: "0.4rem 0.9rem", textTransform: "none", letterSpacing: 0, fontWeight: 600 }}
+                >
+                  {showAllWords ? "Show fewer words" : `Show all ${words.length} words`}
+                </button>
+              )}
+            </>
+          )}
         </div>
 
         {/* Action Buttons */}

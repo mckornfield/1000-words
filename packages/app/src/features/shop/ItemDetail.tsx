@@ -1,5 +1,6 @@
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
+import { Breadcrumb } from "../shared/Breadcrumb";
 import type { DashboardData } from "../../data/account/repository";
 
 interface ItemDetailProps {
@@ -32,13 +33,9 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
   };
 
   return (
-    <section className="screen item-detail-screen swiss">
+    <section className="screen item-detail-screen swiss page-enter">
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "1rem" }}>
-        <header className="topbar" style={{ marginBottom: "1.5rem" }}>
-          <button onClick={() => navigate("/shop")}>← Back</button>
-          <h1>Item Details</h1>
-          <div />
-        </header>
+        <Breadcrumb currentPath="/shop/:itemId" params={{ itemId }} labels={{ itemName: item.name }} />
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", alignItems: "start" }}>
           {/* Item Display */}

@@ -1,5 +1,6 @@
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
+import { Breadcrumb } from "../shared/Breadcrumb";
 import type { DashboardData } from "../../data/account/repository";
 
 interface AchievementDetailProps {
@@ -36,13 +37,9 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
   );
 
   return (
-    <section className="screen achievement-detail-screen swiss">
+    <section className="screen achievement-detail-screen swiss page-enter">
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "1rem" }}>
-        <header className="topbar" style={{ marginBottom: "1.5rem" }}>
-          <button onClick={() => navigate("/achievements")}>← Back</button>
-          <h1>Achievement Details</h1>
-          <div />
-        </header>
+        <Breadcrumb currentPath="/achievements/:achievementId" params={{ achievementId }} labels={{ achievementTitle: achievement.title }} />
 
         {/* Hero Section */}
         <div

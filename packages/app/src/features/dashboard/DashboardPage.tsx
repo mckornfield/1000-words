@@ -101,7 +101,16 @@ export function DashboardPage({ dashboardData, avatarSrc, onSignOut }: Dashboard
         {/* Top bar */}
         <header className="bento-cell topbar">
           <h1>1000 Words</h1>
-          <button onClick={onSignOut}>Sign Out</button>
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+            <button
+              onClick={() => navigate("/profile/settings")}
+              style={{ background: "var(--surface-raised)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
+              aria-label="Settings"
+            >
+              ⚙
+            </button>
+            <button onClick={onSignOut}>Sign Out</button>
+          </div>
         </header>
 
         {/* Profile */}

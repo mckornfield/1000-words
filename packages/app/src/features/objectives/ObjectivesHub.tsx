@@ -23,7 +23,7 @@ export function ObjectivesHub({ dashboardData }: ObjectivesHubProps) {
   ];
 
   return (
-    <section className="screen objectives-screen swiss">
+    <section className="screen objectives-screen swiss page-enter">
       <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "1rem" }}>
         <header className="topbar" style={{ marginBottom: "1.5rem" }}>
           <button onClick={() => navigate("/dashboard")}>← Back</button>

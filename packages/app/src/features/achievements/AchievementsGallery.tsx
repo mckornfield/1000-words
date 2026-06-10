@@ -36,7 +36,7 @@ export function AchievementsGallery({ dashboardData }: AchievementsGalleryProps)
   };
 
   return (
-    <section className="screen achievements-screen swiss">
+    <section className="screen achievements-screen swiss page-enter">
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "1rem" }}>
         <header className="topbar" style={{ marginBottom: "1.5rem" }}>
           <button onClick={() => navigate("/dashboard")}>← Back</button>
