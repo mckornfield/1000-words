@@ -1,16 +1,29 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import type { AppRuntimeConfig } from "../../config/appConfig";
 
 interface LoginPageProps {
+  /** Runtime config passed from the app shell — controls demo credential visibility. */
   config: AppRuntimeConfig;
+  /**
+   * Called on form submit with the entered credentials.
+   * Should throw a descriptive Error on failure so the form can display it inline.
+   */
   onSignIn: (email: string, password: string) => Promise<void>;
 }
 
 export function LoginPage({ config, onSignIn }: LoginPageProps) {
-  const [email, setEmail] = useState("demo");
-  const [password, setPassword] = useState("demo");
+  // Pre-fill credentials when demo mode is active so first-time users can
+  // sign in immediately without typing.
+  const [email, setEmail] = useState(config.demoLoginEnabled ? "demo" : "");
+  const [password, setPassword] = useState(config.demoLoginEnabled ? "demo" : "");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Track whether the component is still mounted. React 18 silently drops state
+  // updates on unmounted components, but we guard explicitly for clarity and
+  // forward-compatibility with concurrent features.
+  const mountedRef = useRef(true);
+  // Note: no cleanup needed — this ref is only written, never subscribed to.
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -19,40 +32,33 @@ export function LoginPage({ config, onSignIn }: LoginPageProps) {
 
     try {
       await onSignIn(email, password);
+      // onSignIn navigates away on success. If the component is still mounted
+      // (e.g. during a slow transition), clear the pending state.
+      if (mountedRef.current) setPending(false);
     } catch (caught) {
-      const message = caught instanceof Error ? caught.message : "Sign in failed.";
-      setError(message);
-      setPending(false);
-      return;
+      const message =
+        caught instanceof Error
+          ? caught.message
+          : "Sign in failed. Please check your credentials and try again.";
+      console.error("[LoginPage] Sign-in error:", caught);
+      if (mountedRef.current) {
+        setError(message);
+        setPending(false);
+      }
     }
-
-    setPending(false);
   }
 
   return (
     <section className="screen login-screen swiss">
       <div className="login-card bento-cell">
-        <figure className="hero-figure swiss-rule">
-          <svg
+        <figure className="hero-figure">
+          <img
+            src="/placeholder.svg"
             className="hero-svg"
-            viewBox="0 0 640 260"
-            role="img"
-            aria-label="Learning dashboard illustration placeholder"
-          >
-            <rect x="0" y="0" width="640" height="260" rx="12" fill="currentColor" opacity="0.06" />
-            <rect x="20" y="24" width="220" height="190" rx="8" fill="currentColor" opacity="0.14" />
-            <rect x="260" y="24" width="360" height="56" rx="8" fill="currentColor" opacity="0.2" />
-            <rect x="260" y="96" width="170" height="118" rx="8" fill="currentColor" opacity="0.12" />
-            <rect x="450" y="96" width="170" height="54" rx="8" fill="currentColor" opacity="0.18" />
-            <rect x="450" y="160" width="170" height="54" rx="8" fill="currentColor" opacity="0.08" />
-            <text x="38" y="54" fontSize="20" fontFamily="Inter, Helvetica, sans-serif" fill="currentColor">
-              UI HERO PLACEHOLDER
-            </text>
-            <text x="38" y="84" fontSize="14" fontFamily="Inter, Helvetica, sans-serif" fill="currentColor">
-              [SVG] [IMG] [BOX]
-            </text>
-          </svg>
-          <figcaption className="hero-fallback">[SVG] [IMG] [BOX?] Visual preview placeholder</figcaption>
+            alt="Dashboard preview"
+            width={640}
+            height={260}
+          />
         </figure>
 
         <header className="login-header">
@@ -68,6 +74,7 @@ export function LoginPage({ config, onSignIn }: LoginPageProps) {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete="username"
+              placeholder="you@example.com"
               required
             />
           </label>
@@ -79,18 +86,18 @@ export function LoginPage({ config, onSignIn }: LoginPageProps) {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               autoComplete="current-password"
+              placeholder="••••••••"
               required
             />
           </label>
 
           <button type="submit" disabled={pending}>
-            {pending ? "SIGNING IN..." : "SIGN IN"}
+            {pending ? "Signing in..." : "Sign In"}
           </button>
 
-          <p className="demo-flag">
-            Demo Login: <strong>{String(config.demoLoginEnabled)}</strong>
-          </p>
-          <p className="demo-credentials">Use demo/demo when demo login is enabled.</p>
+          {config.demoLoginEnabled && (
+            <p className="demo-hint">Demo credentials pre-filled: demo / demo</p>
+          )}
 
           {error ? <p className="login-error">{error}</p> : null}
         </form>

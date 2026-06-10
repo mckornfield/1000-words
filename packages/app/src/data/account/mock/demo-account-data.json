@@ -37,7 +37,7 @@
       "lessonId": "Les-001",
       "trackId": "Trk-Core-ES",
       "title": "Core Greetings",
-      "description": "High-frequency introductions and basic social phrases.",
+      "description": "High-frequency introductions and basic social phrases every beginner needs.",
       "difficulty": "starter",
       "xpReward": 120,
       "estimatedMinutes": 12,
@@ -49,7 +49,7 @@
       "lessonId": "Les-002",
       "trackId": "Trk-Core-ES",
       "title": "Daily Actions",
-      "description": "Most common verbs used in present tense.",
+      "description": "The most common Spanish verbs used in everyday present tense conversation.",
       "difficulty": "core",
       "xpReward": 180,
       "estimatedMinutes": 16,
@@ -61,23 +61,83 @@
       "lessonId": "Les-003",
       "trackId": "Trk-Core-ES",
       "title": "Travel Basics",
-      "description": "Practical vocabulary for transit, lodging, and help requests.",
+      "description": "Practical vocabulary for airports, transit, lodging, and asking for directions.",
       "difficulty": "core",
       "xpReward": 220,
       "estimatedMinutes": 18,
       "status": "locked",
       "completionPercent": 0,
       "badgeId": "Bad-003"
+    },
+    {
+      "lessonId": "Les-004",
+      "trackId": "Trk-Core-ES",
+      "title": "Food & Dining",
+      "description": "Restaurant vocabulary, ordering food, and understanding menus.",
+      "difficulty": "core",
+      "xpReward": 200,
+      "estimatedMinutes": 15,
+      "status": "locked",
+      "completionPercent": 0,
+      "badgeId": "Bad-004"
+    },
+    {
+      "lessonId": "Les-005",
+      "trackId": "Trk-Core-ES",
+      "title": "Numbers & Time",
+      "description": "Numbers, telling time, days, months, and date expressions.",
+      "difficulty": "starter",
+      "xpReward": 140,
+      "estimatedMinutes": 14,
+      "status": "locked",
+      "completionPercent": 0,
+      "badgeId": "Bad-005"
+    },
+    {
+      "lessonId": "Les-006",
+      "trackId": "Trk-Practical-ES",
+      "title": "Shopping & Prices",
+      "description": "Vocabulary for markets, stores, bargaining, and handling money.",
+      "difficulty": "core",
+      "xpReward": 190,
+      "estimatedMinutes": 17,
+      "status": "locked",
+      "completionPercent": 0,
+      "badgeId": "Bad-006"
+    },
+    {
+      "lessonId": "Les-007",
+      "trackId": "Trk-Practical-ES",
+      "title": "Emotions & Feelings",
+      "description": "Express how you feel, understand emotional context, and build connection.",
+      "difficulty": "advanced",
+      "xpReward": 260,
+      "estimatedMinutes": 20,
+      "status": "locked",
+      "completionPercent": 0,
+      "badgeId": "Bad-007"
+    },
+    {
+      "lessonId": "Les-008",
+      "trackId": "Trk-Advanced-ES",
+      "title": "Nature & Environment",
+      "description": "Landscape, weather, animals, and the natural world in Spanish.",
+      "difficulty": "advanced",
+      "xpReward": 300,
+      "estimatedMinutes": 22,
+      "status": "locked",
+      "completionPercent": 0,
+      "badgeId": "Bad-008"
     }
   ],
   "achievements": [
     {
       "achievementId": "Ach-001",
       "title": "First Steps",
-      "description": "Complete your first lesson.",
+      "description": "Complete your very first lesson and begin your journey.",
       "xpReward": 100,
       "rarity": "common",
-      "icon": "\ud83c\udf1f",
+      "icon": "🌟",
       "iconFallback": "[*]",
       "status": "completed",
       "completedAt": "2026-05-15"
@@ -85,10 +145,10 @@
     {
       "achievementId": "Ach-002",
       "title": "Streak Keeper",
-      "description": "Maintain a 7-day learning streak.",
+      "description": "Maintain a 7-day learning streak without missing a day.",
       "xpReward": 280,
       "rarity": "rare",
-      "icon": "\ud83d\udd25",
+      "icon": "🔥",
       "iconFallback": "[FIRE]",
       "status": "completed",
       "completedAt": "2026-06-08"
@@ -96,12 +156,67 @@
     {
       "achievementId": "Ach-003",
       "title": "Speed Learner",
-      "description": "Earn 500 XP in a single day.",
+      "description": "Earn 500 XP in a single day through focused study sessions.",
       "xpReward": 400,
       "rarity": "epic",
-      "icon": "\u26a1",
+      "icon": "⚡",
       "iconFallback": "[BOLT]",
       "status": "in_progress",
+      "completedAt": null
+    },
+    {
+      "achievementId": "Ach-004",
+      "title": "Vocabulary Builder",
+      "description": "Successfully learn and review 100 unique vocabulary words.",
+      "xpReward": 350,
+      "rarity": "rare",
+      "icon": "📖",
+      "iconFallback": "[BOOK]",
+      "status": "in_progress",
+      "completedAt": null
+    },
+    {
+      "achievementId": "Ach-005",
+      "title": "Track Champion",
+      "description": "Complete every lesson in the Core Greetings track.",
+      "xpReward": 600,
+      "rarity": "epic",
+      "icon": "🏆",
+      "iconFallback": "[CUP]",
+      "status": "in_progress",
+      "completedAt": null
+    },
+    {
+      "achievementId": "Ach-006",
+      "title": "Consistency King",
+      "description": "Reach a 30-day streak — true dedication to your craft.",
+      "xpReward": 1200,
+      "rarity": "legendary",
+      "icon": "👑",
+      "iconFallback": "[CROWN]",
+      "status": "locked",
+      "completedAt": null
+    },
+    {
+      "achievementId": "Ach-007",
+      "title": "Explorer",
+      "description": "Start lessons across three different learning tracks.",
+      "xpReward": 450,
+      "rarity": "rare",
+      "icon": "🗺️",
+      "iconFallback": "[MAP]",
+      "status": "locked",
+      "completedAt": null
+    },
+    {
+      "achievementId": "Ach-008",
+      "title": "Perfect Score",
+      "description": "Complete a full study session with 100% accuracy — no misses.",
+      "xpReward": 500,
+      "rarity": "epic",
+      "icon": "💎",
+      "iconFallback": "[GEM]",
+      "status": "locked",
       "completedAt": null
     }
   ],
@@ -110,38 +225,103 @@
       "storeItemId": "StoreAvatar-001",
       "category": "profile_picture",
       "name": "Orbit Runner",
-      "description": "Minimal geometric avatar with high contrast styling.",
+      "description": "Minimal geometric avatar with high contrast styling and sharp lines.",
       "priceXp": 600,
       "unlockRequirementId": "Req-001",
       "assetRefId": "Asset-Avatar-001",
-      "emoji": "\ud83e\uddd1\u200d\ud83d\ude80",
+      "emoji": "🧑‍🚀",
       "emojiFallback": "[RUNNER]",
+      "isOwned": true,
+      "isEquipped": true
+    },
+    {
+      "storeItemId": "StoreAvatar-002",
+      "category": "profile_picture",
+      "name": "Sunset Coder",
+      "description": "Warm retro-inspired avatar with golden hour tones.",
+      "priceXp": 800,
+      "unlockRequirementId": "Req-004",
+      "assetRefId": "Asset-Avatar-002",
+      "emoji": "🧑‍💻",
+      "emojiFallback": "[CODER]",
+      "isOwned": false,
+      "isEquipped": false
+    },
+    {
+      "storeItemId": "StoreAvatar-003",
+      "category": "profile_picture",
+      "name": "Galaxy Wanderer",
+      "description": "Deep space explorer avatar for the dedicated learner.",
+      "priceXp": 1200,
+      "unlockRequirementId": "Req-007",
+      "assetRefId": "Asset-Avatar-003",
+      "emoji": "🧙",
+      "emojiFallback": "[WIZARD]",
+      "isOwned": false,
+      "isEquipped": false
+    },
+    {
+      "storeItemId": "Border-001",
+      "category": "profile_border",
+      "name": "Redline Frame",
+      "description": "Swiss-inspired red edge frame — bold, minimal, unmistakable.",
+      "priceXp": 450,
+      "unlockRequirementId": "Req-002",
+      "assetRefId": "Asset-Border-001",
+      "emoji": "🔳",
+      "emojiFallback": "[#]",
       "isOwned": true,
       "isEquipped": true
     },
     {
       "storeItemId": "Border-002",
       "category": "profile_border",
-      "name": "Redline Frame",
-      "description": "Swiss-inspired red edge frame for profile cards.",
-      "priceXp": 450,
-      "unlockRequirementId": "Req-002",
+      "name": "Neon Edge",
+      "description": "Electric blue neon glow border for a futuristic look.",
+      "priceXp": 550,
+      "unlockRequirementId": "Req-005",
       "assetRefId": "Asset-Border-002",
-      "emoji": "\ud83d\udd33",
-      "emojiFallback": "[#]",
-      "isOwned": true,
-      "isEquipped": true
+      "emoji": "🟦",
+      "emojiFallback": "[NEON]",
+      "isOwned": false,
+      "isEquipped": false
     },
     {
-      "storeItemId": "Accent-003",
+      "storeItemId": "Border-003",
+      "category": "profile_border",
+      "name": "Minimalist Frame",
+      "description": "Clean hairline border — understated elegance for serious learners.",
+      "priceXp": 350,
+      "unlockRequirementId": "Req-006",
+      "assetRefId": "Asset-Border-003",
+      "emoji": "⬜",
+      "emojiFallback": "[FRAME]",
+      "isOwned": false,
+      "isEquipped": false
+    },
+    {
+      "storeItemId": "Accent-001",
       "category": "profile_accent",
       "name": "Lightning Prefix",
-      "description": "Adds an electric accent before your display name.",
+      "description": "Adds an electric accent before your display name on profile cards.",
       "priceXp": 300,
       "unlockRequirementId": "Req-003",
-      "assetRefId": "Asset-Accent-003",
-      "emoji": "\u26a1",
+      "assetRefId": "Asset-Accent-001",
+      "emoji": "⚡",
       "emojiFallback": "[!]",
+      "isOwned": false,
+      "isEquipped": false
+    },
+    {
+      "storeItemId": "Accent-002",
+      "category": "profile_accent",
+      "name": "Crown Prefix",
+      "description": "Mark yourself as royalty with a golden crown before your name.",
+      "priceXp": 900,
+      "unlockRequirementId": "Req-008",
+      "assetRefId": "Asset-Accent-002",
+      "emoji": "👑",
+      "emojiFallback": "[CROWN]",
       "isOwned": false,
       "isEquipped": false
     }
@@ -170,32 +350,88 @@
       "progress": 30,
       "xpReward": 140,
       "status": "completed"
+    },
+    {
+      "goalId": "Goal-004",
+      "title": "Maintain Streak",
+      "target": 1,
+      "progress": 1,
+      "xpReward": 50,
+      "status": "completed"
+    },
+    {
+      "goalId": "Goal-005",
+      "title": "Practice Pronunciation",
+      "target": 10,
+      "progress": 0,
+      "xpReward": 80,
+      "status": "locked"
     }
   ],
   "activityTimeline": [
     {
       "eventId": "Evt-001",
       "timestamp": "2026-06-10T08:00:00.000Z",
-      "title": "Lesson Complete",
-      "detail": "Daily Actions reached 64% completion.",
-      "icon": "\u2705",
+      "title": "Lesson Progress",
+      "detail": "Daily Actions reached 64% completion — 12 new words reviewed.",
+      "icon": "✅",
       "iconFallback": "[OK]"
     },
     {
       "eventId": "Evt-002",
       "timestamp": "2026-06-10T07:42:00.000Z",
       "title": "Achievement Progress",
-      "detail": "Speed Learner is at 72%.",
-      "icon": "\ud83c\udfaf",
+      "detail": "Speed Learner is now at 72% — keep earning XP today!",
+      "icon": "🎯",
       "iconFallback": "[AIM]"
     },
     {
       "eventId": "Evt-003",
       "timestamp": "2026-06-10T07:20:00.000Z",
       "title": "Store Unlock",
-      "detail": "Redline Frame equipped.",
-      "icon": "\ud83d\uded2",
+      "detail": "Redline Frame equipped to your profile.",
+      "icon": "🛒",
       "iconFallback": "[STORE]"
+    },
+    {
+      "eventId": "Evt-004",
+      "timestamp": "2026-06-09T19:15:00.000Z",
+      "title": "Daily Goal Complete",
+      "detail": "Reviewed 30 cards — Daily Goal completed for +140 XP.",
+      "icon": "🏅",
+      "iconFallback": "[MEDAL]"
+    },
+    {
+      "eventId": "Evt-005",
+      "timestamp": "2026-06-09T14:30:00.000Z",
+      "title": "Streak Milestone",
+      "detail": "9-day streak reached! Streak Keeper achievement earned.",
+      "icon": "🔥",
+      "iconFallback": "[FIRE]"
+    },
+    {
+      "eventId": "Evt-006",
+      "timestamp": "2026-06-08T10:00:00.000Z",
+      "title": "Achievement Unlocked",
+      "detail": "Streak Keeper earned — 7-day streak milestone hit for +280 XP.",
+      "icon": "🏆",
+      "iconFallback": "[CUP]"
+    },
+    {
+      "eventId": "Evt-007",
+      "timestamp": "2026-06-07T08:45:00.000Z",
+      "title": "Lesson Complete",
+      "detail": "Core Greetings fully completed — 100% mastery, +120 XP earned.",
+      "icon": "🌟",
+      "iconFallback": "[STAR]"
+    },
+    {
+      "eventId": "Evt-008",
+      "timestamp": "2026-06-05T16:00:00.000Z",
+      "title": "Level Up",
+      "detail": "Reached Level 12! New lessons and rewards now available.",
+      "icon": "⬆️",
+      "iconFallback": "[UP]"
     }
   ]
 }
