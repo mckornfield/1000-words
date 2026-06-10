@@ -7,6 +7,13 @@ export default defineConfig({
   // Single .env at the repo root, shared with vitest setup + shell tooling.
   envDir: "../..",
   server: {
-    port: 5173,
+    host: true,
+    port: 8080,
+    strictPort: true,
+  },
+  preview: {
+    host: true,
+    port: 8080,
+    strictPort: true,
   },
 });
