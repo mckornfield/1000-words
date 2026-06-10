@@ -33,6 +33,7 @@ export type RoutePath =
   | "/profile"
   | "/profile/stats"
   | "/profile/customization"
+  | "/profile/settings"
   | "/objectives"
   | "/objectives/:objectiveId";
 
@@ -106,6 +107,9 @@ export function parseRoute(): ParsedRoute {
     }
     if (segments.length === 2 && segments[1] === "customization") {
       return { path: "/profile/customization", params: {} };
+    }
+    if (segments.length === 2 && segments[1] === "settings") {
+      return { path: "/profile/settings", params: {} };
     }
   }
 
@@ -186,7 +190,7 @@ export function getParentRoute(currentRoute: RoutePath): RoutePath | null {
     return "/dashboard" as RoutePath;
   }
   if (currentRoute.startsWith("/profile")) {
-    if (currentRoute === "/profile/stats" || currentRoute === "/profile/customization") return "/profile" as RoutePath;
+    if (currentRoute === "/profile/stats" || currentRoute === "/profile/customization" || currentRoute === "/profile/settings") return "/profile" as RoutePath;
     return "/dashboard" as RoutePath;
   }
   if (currentRoute.startsWith("/objectives")) {
@@ -230,6 +234,8 @@ export function getRouteBreadcrumbLabel(
       return "Stats & History";
     case "/profile/customization":
       return "Customization";
+    case "/profile/settings":
+      return "Settings";
     case "/objectives":
       return "Daily Goals";
     case "/objectives/:objectiveId":

@@ -14,7 +14,10 @@ import { ItemDetail } from "./features/shop/ItemDetail";
 import { ProfileOverview } from "./features/profile/ProfileOverview";
 import { StatsPage } from "./features/profile/StatsPage";
 import { CustomizationPage } from "./features/profile/CustomizationPage";
+import { SettingsPage } from "./features/profile/SettingsPage";
 import { ObjectivesHub } from "./features/objectives/ObjectivesHub";
+import { NavBar } from "./features/shared/NavBar";
+import { ToastProvider } from "./features/shared/Toast";
 import { parseRoute, navigate, requiresAuth, type ParsedRoute } from "./lib/router";
 
 // ─── App shell ────────────────────────────────────────────────────────────────
@@ -116,48 +119,57 @@ export function App() {
     return <LoginPage config={appConfig} onSignIn={signIn} />;
   }
 
-  // Route-based rendering
-  switch (currentRoute.path) {
-    case "/dashboard":
-      return <DashboardPage dashboardData={dashboardData} avatarSrc={avatarSrc} onSignOut={signOut} />;
+  // Study sessions hide the nav bar for focus
+  const hideNav = currentRoute.path === "/lessons/:lessonId/study";
 
-    case "/lessons":
-      return <LessonsList dashboardData={dashboardData} onNavigateToLesson={() => {}} />;
+  // Route → component mapping — dashboardData is guaranteed non-null here (guarded above)
+  function renderPage() {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const data = dashboardData!;
+    const { path, params } = currentRoute;
+    const lessonId       = params.lessonId ?? "";
+    const achievementId  = params.achievementId ?? "";
+    const itemId         = params.itemId ?? "";
 
-    case "/lessons/:lessonId":
-      return <LessonDetail dashboardData={dashboardData} lessonId={currentRoute.params.lessonId || ""} />;
-
-    case "/lessons/:lessonId/study":
-      return <StudySession dashboardData={dashboardData} lessonId={currentRoute.params.lessonId || ""} />;
-
-    case "/achievements":
-      return <AchievementsGallery dashboardData={dashboardData} />;
-
-    case "/achievements/:achievementId":
-      return <AchievementDetail dashboardData={dashboardData} achievementId={currentRoute.params.achievementId || ""} />;
-
-    case "/shop":
-      return <ShopBrowse dashboardData={dashboardData} />;
-
-    case "/shop/:itemId":
-      return <ItemDetail dashboardData={dashboardData} itemId={currentRoute.params.itemId || ""} />;
-
-    case "/profile":
-      return <ProfileOverview dashboardData={dashboardData} avatarSrc={avatarSrc} />;
-
-    case "/profile/stats":
-      return <StatsPage dashboardData={dashboardData} />;
-
-    case "/profile/customization":
-      return <CustomizationPage dashboardData={dashboardData} avatarSrc={avatarSrc} />;
-
-    case "/objectives":
-      return <ObjectivesHub dashboardData={dashboardData} />;
-
-    case "/objectives/:objectiveId":
-      return <ObjectivesHub dashboardData={dashboardData} />;
-
-    default:
-      return <DashboardPage dashboardData={dashboardData} avatarSrc={avatarSrc} onSignOut={signOut} />;
+    switch (path) {
+      case "/dashboard":
+        return <DashboardPage dashboardData={data} avatarSrc={avatarSrc} onSignOut={signOut} />;
+      case "/lessons":
+        return <LessonsList dashboardData={data} onNavigateToLesson={() => {}} />;
+      case "/lessons/:lessonId":
+        return <LessonDetail dashboardData={data} lessonId={lessonId} />;
+      case "/lessons/:lessonId/study":
+        return <StudySession dashboardData={data} lessonId={lessonId} />;
+      case "/achievements":
+        return <AchievementsGallery dashboardData={data} />;
+      case "/achievements/:achievementId":
+        return <AchievementDetail dashboardData={data} achievementId={achievementId} />;
+      case "/shop":
+        return <ShopBrowse dashboardData={data} />;
+      case "/shop/:itemId":
+        return <ItemDetail dashboardData={data} itemId={itemId} />;
+      case "/profile":
+        return <ProfileOverview dashboardData={data} avatarSrc={avatarSrc} />;
+      case "/profile/stats":
+        return <StatsPage dashboardData={data} />;
+      case "/profile/customization":
+        return <CustomizationPage dashboardData={data} avatarSrc={avatarSrc} />;
+      case "/profile/settings":
+        return <SettingsPage dashboardData={data} />;
+      case "/objectives":
+      case "/objectives/:objectiveId":
+        return <ObjectivesHub dashboardData={data} />;
+      default:
+        return <DashboardPage dashboardData={data} avatarSrc={avatarSrc} onSignOut={signOut} />;
+    }
   }
+
+  return (
+    <ToastProvider>
+      <div key={currentRoute.path} className="page-enter">
+        {renderPage()}
+      </div>
+      {!hideNav && <NavBar currentPath={currentRoute.path} />}
+    </ToastProvider>
+  );
 }

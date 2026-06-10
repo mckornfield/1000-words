@@ -39,7 +39,7 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
   const userXP = dashboardData.profile.xp;
 
   return (
-    <section className="screen shop-screen swiss">
+    <section className="screen shop-screen swiss page-enter">
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "1rem" }}>
         <header className="topbar" style={{ marginBottom: "1.5rem" }}>
           <button onClick={() => navigate("/dashboard")}>← Back</button>

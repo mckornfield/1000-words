@@ -1,4 +1,5 @@
 import { navigate } from "../../lib/router";
+import { Breadcrumb } from "../shared/Breadcrumb";
 import type { DashboardData } from "../../data/account/repository";
 
 interface StatsPageProps {
@@ -18,8 +19,9 @@ export function StatsPage({ dashboardData }: StatsPageProps) {
   }));
 
   return (
-    <section className="screen stats-screen swiss">
+    <section className="screen stats-screen swiss page-enter">
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "1rem" }}>
+        <Breadcrumb currentPath="/profile/stats" />
         <header className="topbar" style={{ marginBottom: "1.5rem" }}>
           <button onClick={() => navigate("/profile")}>← Back</button>
           <h1>Stats & History</h1>

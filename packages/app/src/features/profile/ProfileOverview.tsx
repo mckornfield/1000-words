@@ -10,7 +10,7 @@ export function ProfileOverview({ dashboardData, avatarSrc }: ProfileOverviewPro
   const { profile } = dashboardData;
 
   return (
-    <section className="screen profile-screen swiss">
+    <section className="screen profile-screen swiss page-enter">
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "1rem" }}>
         <header className="topbar" style={{ marginBottom: "1.5rem" }}>
           <button onClick={() => navigate("/dashboard")}>← Back</button>
@@ -61,6 +61,19 @@ export function ProfileOverview({ dashboardData, avatarSrc }: ProfileOverviewPro
                   }}
                 >
                   Customize
+                </button>
+                <button
+                  onClick={() => navigate("/profile/settings")}
+                  style={{
+                    padding: "0.6rem 1rem",
+                    borderRadius: "var(--radius-sm)",
+                    background: "var(--surface-raised)",
+                    color: "var(--text-secondary)",
+                    border: "1px solid var(--border)",
+                    fontSize: "0.85rem",
+                  }}
+                >
+                  ⚙ Settings
                 </button>
               </div>
             </div>

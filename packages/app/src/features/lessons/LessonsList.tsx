@@ -41,7 +41,7 @@ export function LessonsList({ dashboardData }: LessonsListProps) {
   });
 
   return (
-    <section className="screen lessons-screen swiss">
+    <section className="screen lessons-screen swiss page-enter">
       <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "1rem" }}>
         <header className="topbar" style={{ marginBottom: "1.5rem" }}>
           <button onClick={() => navigate("/dashboard")}>← Back</button>

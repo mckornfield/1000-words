@@ -1,5 +1,6 @@
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
+import { Breadcrumb } from "../shared/Breadcrumb";
 import type { DashboardData } from "../../data/account/repository";
 
 interface CustomizationPageProps {
@@ -24,8 +25,9 @@ export function CustomizationPage({ dashboardData, avatarSrc }: CustomizationPag
   };
 
   return (
-    <section className="screen customization-screen swiss">
+    <section className="screen customization-screen swiss page-enter">
       <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "1rem" }}>
+        <Breadcrumb currentPath="/profile/customization" />
         <header className="topbar" style={{ marginBottom: "1.5rem" }}>
           <button onClick={() => navigate("/profile")}>← Back</button>
           <h1>Customization</h1>
