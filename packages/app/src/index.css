@@ -1,1 +1,339 @@
 @import "tailwindcss";
+
+:root {
+	color-scheme: light dark;
+	--bg: #f0ede8;
+	--surface: #ffffff;
+	--border: #ddd9d0;
+	--text: #1a1a1a;
+	--muted: #55524c;
+	--button-bg: #1a1a1a;
+	--button-text: #f0ede8;
+	--accent: #ff0000;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg: #1a1a1a;
+		--surface: #232323;
+		--border: #3a3a3a;
+		--text: #f0ede8;
+		--muted: #b6b0a8;
+		--button-bg: #f0ede8;
+		--button-text: #1a1a1a;
+		--accent: #ff4d4d;
+	}
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	min-height: 100dvh;
+	background: var(--bg);
+	color: var(--text);
+	font-family: Inter, Helvetica, sans-serif;
+	font-weight: 500;
+}
+
+#root {
+	min-height: 100dvh;
+}
+
+.screen {
+	min-height: 100dvh;
+	padding: 1rem;
+}
+
+.swiss h1,
+.swiss h2,
+.swiss h3 {
+	font-weight: 700;
+	color: var(--text);
+	letter-spacing: 0.01em;
+}
+
+.swiss-rule {
+	border-left: 4px solid var(--accent);
+	padding-left: 0.65rem;
+}
+
+.bento {
+	background: var(--bg);
+	border-radius: 14px;
+	border: 1px solid var(--border);
+}
+
+.bento-cell {
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	padding: 12px;
+}
+
+.login-screen {
+	display: grid;
+	place-items: center;
+}
+
+.login-card {
+	width: min(880px, 96vw);
+	display: grid;
+	gap: 1rem;
+	padding: 1rem;
+}
+
+.hero-figure {
+	margin: 0;
+	display: grid;
+	gap: 0.45rem;
+	color: var(--text);
+}
+
+.hero-svg {
+	width: 100%;
+	height: auto;
+	display: block;
+	border: 1px solid color-mix(in oklab, var(--border) 72%, var(--accent) 28%);
+	border-radius: 8px;
+}
+
+.hero-fallback {
+	font-size: 0.8rem;
+	color: var(--muted);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.login-header p {
+	color: var(--muted);
+	margin-top: 0.2rem;
+}
+
+.login-form {
+	display: grid;
+	gap: 0.85rem;
+}
+
+.login-form label {
+	display: grid;
+	gap: 0.3rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-size: 0.8rem;
+}
+
+.login-form input {
+	border: 0;
+	border-bottom: 2px solid var(--text);
+	border-radius: 0;
+	padding: 0.55rem 0.2rem;
+	font-size: 1rem;
+	background: transparent;
+	color: var(--text);
+}
+
+.login-form input:focus {
+	outline: none;
+	border-bottom-color: var(--accent);
+}
+
+button {
+	border: 0;
+	background: var(--button-bg);
+	color: var(--button-text);
+	border-radius: 0;
+	padding: 0.75rem 1rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+button:disabled {
+	opacity: 0.72;
+	cursor: wait;
+}
+
+.demo-flag,
+.demo-credentials,
+.login-error {
+	margin: 0;
+	font-size: 0.85rem;
+}
+
+.demo-flag,
+.demo-credentials {
+	color: var(--muted);
+}
+
+.login-error {
+	color: var(--accent);
+	font-weight: 700;
+}
+
+.dashboard-screen {
+	padding: 1rem;
+}
+
+.dashboard-shell {
+	width: min(1300px, 100%);
+	margin: 0 auto;
+	padding: 0.9rem;
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap: 0.7rem;
+}
+
+.topbar {
+	grid-column: 1 / -1;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.topbar h1 {
+	margin: 0;
+}
+
+.profile-card {
+	grid-column: span 6;
+}
+
+.xp-card {
+	grid-column: span 3;
+}
+
+.goals-card {
+	grid-column: span 3;
+}
+
+.lessons-card,
+.achievements-card,
+.store-card,
+.timeline-card {
+	grid-column: span 6;
+}
+
+.profile-main {
+	display: flex;
+	gap: 0.8rem;
+	align-items: flex-start;
+}
+
+.profile-avatar {
+	width: 88px;
+	height: 88px;
+	border-radius: 12px;
+	border: 1px solid var(--border);
+	object-fit: cover;
+}
+
+.profile-accent {
+	margin-right: 0.35rem;
+}
+
+.profile-meta {
+	margin: 0;
+	color: var(--muted);
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.profile-stats {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.5rem;
+	margin-top: 0.8rem;
+}
+
+.profile-stats dt {
+	font-size: 0.72rem;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.profile-stats dd {
+	margin: 0;
+	font-size: 0.92rem;
+}
+
+.xp-level {
+	margin: 0.1rem 0;
+	font-size: 1.25rem;
+}
+
+.progress-track {
+	background: color-mix(in oklab, var(--border) 88%, var(--surface) 12%);
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	height: 14px;
+	margin: 0.55rem 0;
+	overflow: hidden;
+}
+
+.progress-track span {
+	display: block;
+	height: 100%;
+	background: linear-gradient(90deg, var(--accent), color-mix(in oklab, var(--accent) 72%, #000 28%));
+}
+
+.dashboard-shell article ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 0.55rem;
+}
+
+.dashboard-shell article li {
+	border-left: 4px solid var(--accent);
+	padding-left: 0.5rem;
+}
+
+.dashboard-shell article p {
+	margin: 0.15rem 0;
+}
+
+.icon-inline {
+	margin-right: 0.4rem;
+}
+
+.fallback-alt {
+	margin-left: 0.25rem;
+	font-size: 0.75rem;
+	color: var(--muted);
+	letter-spacing: 0.04em;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+@media (max-width: 1000px) {
+	.profile-card,
+	.xp-card,
+	.goals-card,
+	.lessons-card,
+	.achievements-card,
+	.store-card,
+	.timeline-card {
+		grid-column: 1 / -1;
+	}
+
+	.profile-stats {
+		grid-template-columns: 1fr;
+	}
+}

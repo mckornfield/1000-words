@@ -1,0 +1,201 @@
+{
+  "schemaVersion": "1.0.0",
+  "users": [
+    {
+      "userId": "Usr-001",
+      "email": "demo",
+      "password": "demo",
+      "profileId": "Prof-001",
+      "status": "active"
+    }
+  ],
+  "profiles": [
+    {
+      "profileId": "Prof-001",
+      "userId": "Usr-001",
+      "displayName": "Ari Navarro",
+      "email": "demo",
+      "phone": "+1-202-555-0100",
+      "avatarBase64": "PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMjAnIGhlaWdodD0nMTIwJyB2aWV3Qm94PScwIDAgMTIwIDEyMCc+PHJlY3Qgd2lkdGg9JzEyMCcgaGVpZ2h0PScxMjAnIGZpbGw9JyMxYTE5MTgnLz48Y2lyY2xlIGN4PSc2MCcgY3k9JzQ4JyByPScyMCcgZmlsbD0nI2YwZWRlOCcvPjxyZWN0IHg9JzMwJyB5PSc3NCcgd2lkdGg9JzYwJyBoZWlnaHQ9JzMwJyByeD0nMTUnIGZpbGw9JyNmMGVkZTgnLz48L3N2Zz4=",
+      "avatarFallbackText": "[AVATAR]",
+      "profileBannerId": "Ban-001",
+      "profileLevel": 12,
+      "xp": 2840,
+      "xpToNextLevel": 3200,
+      "streakDays": 9,
+      "joinedDate": "2026-05-15",
+      "lastActiveDate": "2026-06-10",
+      "accentId": "Acc-001",
+      "borderId": "Bor-002",
+      "themePreference": "system",
+      "timezone": "America/New_York",
+      "bio": "Focused on accelerated Spanish learning in 15-minute sprints."
+    }
+  ],
+  "lessons": [
+    {
+      "lessonId": "Les-001",
+      "trackId": "Trk-Core-ES",
+      "title": "Core Greetings",
+      "description": "High-frequency introductions and basic social phrases.",
+      "difficulty": "starter",
+      "xpReward": 120,
+      "estimatedMinutes": 12,
+      "status": "completed",
+      "completionPercent": 100,
+      "badgeId": "Bad-001"
+    },
+    {
+      "lessonId": "Les-002",
+      "trackId": "Trk-Core-ES",
+      "title": "Daily Actions",
+      "description": "Most common verbs used in present tense.",
+      "difficulty": "core",
+      "xpReward": 180,
+      "estimatedMinutes": 16,
+      "status": "in_progress",
+      "completionPercent": 64,
+      "badgeId": "Bad-002"
+    },
+    {
+      "lessonId": "Les-003",
+      "trackId": "Trk-Core-ES",
+      "title": "Travel Basics",
+      "description": "Practical vocabulary for transit, lodging, and help requests.",
+      "difficulty": "core",
+      "xpReward": 220,
+      "estimatedMinutes": 18,
+      "status": "locked",
+      "completionPercent": 0,
+      "badgeId": "Bad-003"
+    }
+  ],
+  "achievements": [
+    {
+      "achievementId": "Ach-001",
+      "title": "First Steps",
+      "description": "Complete your first lesson.",
+      "xpReward": 100,
+      "rarity": "common",
+      "icon": "\ud83c\udf1f",
+      "iconFallback": "[*]",
+      "status": "completed",
+      "completedAt": "2026-05-15"
+    },
+    {
+      "achievementId": "Ach-002",
+      "title": "Streak Keeper",
+      "description": "Maintain a 7-day learning streak.",
+      "xpReward": 280,
+      "rarity": "rare",
+      "icon": "\ud83d\udd25",
+      "iconFallback": "[FIRE]",
+      "status": "completed",
+      "completedAt": "2026-06-08"
+    },
+    {
+      "achievementId": "Ach-003",
+      "title": "Speed Learner",
+      "description": "Earn 500 XP in a single day.",
+      "xpReward": 400,
+      "rarity": "epic",
+      "icon": "\u26a1",
+      "iconFallback": "[BOLT]",
+      "status": "in_progress",
+      "completedAt": null
+    }
+  ],
+  "storeItems": [
+    {
+      "storeItemId": "StoreAvatar-001",
+      "category": "profile_picture",
+      "name": "Orbit Runner",
+      "description": "Minimal geometric avatar with high contrast styling.",
+      "priceXp": 600,
+      "unlockRequirementId": "Req-001",
+      "assetRefId": "Asset-Avatar-001",
+      "emoji": "\ud83e\uddd1\u200d\ud83d\ude80",
+      "emojiFallback": "[RUNNER]",
+      "isOwned": true,
+      "isEquipped": true
+    },
+    {
+      "storeItemId": "Border-002",
+      "category": "profile_border",
+      "name": "Redline Frame",
+      "description": "Swiss-inspired red edge frame for profile cards.",
+      "priceXp": 450,
+      "unlockRequirementId": "Req-002",
+      "assetRefId": "Asset-Border-002",
+      "emoji": "\ud83d\udd33",
+      "emojiFallback": "[#]",
+      "isOwned": true,
+      "isEquipped": true
+    },
+    {
+      "storeItemId": "Accent-003",
+      "category": "profile_accent",
+      "name": "Lightning Prefix",
+      "description": "Adds an electric accent before your display name.",
+      "priceXp": 300,
+      "unlockRequirementId": "Req-003",
+      "assetRefId": "Asset-Accent-003",
+      "emoji": "\u26a1",
+      "emojiFallback": "[!]",
+      "isOwned": false,
+      "isEquipped": false
+    }
+  ],
+  "dailyGoals": [
+    {
+      "goalId": "Goal-001",
+      "title": "Complete 2 Lessons",
+      "target": 2,
+      "progress": 1,
+      "xpReward": 120,
+      "status": "in_progress"
+    },
+    {
+      "goalId": "Goal-002",
+      "title": "Earn 250 XP",
+      "target": 250,
+      "progress": 180,
+      "xpReward": 160,
+      "status": "in_progress"
+    },
+    {
+      "goalId": "Goal-003",
+      "title": "Review 30 Cards",
+      "target": 30,
+      "progress": 30,
+      "xpReward": 140,
+      "status": "completed"
+    }
+  ],
+  "activityTimeline": [
+    {
+      "eventId": "Evt-001",
+      "timestamp": "2026-06-10T08:00:00.000Z",
+      "title": "Lesson Complete",
+      "detail": "Daily Actions reached 64% completion.",
+      "icon": "\u2705",
+      "iconFallback": "[OK]"
+    },
+    {
+      "eventId": "Evt-002",
+      "timestamp": "2026-06-10T07:42:00.000Z",
+      "title": "Achievement Progress",
+      "detail": "Speed Learner is at 72%.",
+      "icon": "\ud83c\udfaf",
+      "iconFallback": "[AIM]"
+    },
+    {
+      "eventId": "Evt-003",
+      "timestamp": "2026-06-10T07:20:00.000Z",
+      "title": "Store Unlock",
+      "detail": "Redline Frame equipped.",
+      "icon": "\ud83d\uded2",
+      "iconFallback": "[STORE]"
+    }
+  ]
+}

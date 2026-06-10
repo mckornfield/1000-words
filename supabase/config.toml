@@ -3,6 +3,9 @@
 # migrations under supabase/migrations/ — they are the source of truth.
 project_id = "1000-words"
 
+[app]
+demoLogin = true
+
 [api]
 enabled = true
 port = 54321
