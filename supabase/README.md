@@ -12,8 +12,9 @@ supabase start          # boots Postgres + Auth + Studio locally
 supabase db reset       # applies migrations/ from scratch into the local db
 ```
 
-`supabase start` prints the local API URL and anon key — put them in
-`packages/app/.env` (see `packages/app/.env.example`).
+`supabase start` prints the local API URL, publishable (anon) key, and secret
+(service_role) key — copy them into the repo-root `.env` (see `.env.example`).
+That single file is read by both the Vite app and the test setup.
 
 If `supabase start` complains about `config.toml` on your CLI version, run
 `supabase init` to regenerate it; the files under `migrations/` are the source of
