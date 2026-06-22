@@ -3,6 +3,8 @@ import { navigate } from "../../lib/router";
 import type { DashboardData } from "../../data/account/repository";
 import { Breadcrumb } from "../shared/Breadcrumb";
 import { useToast } from "../shared/Toast";
+import { useAppContext } from "../../data/AppContext";
+import type { UserSettings } from "../../data/types";
 
 interface SettingsPageProps {
   dashboardData: DashboardData;
@@ -11,19 +13,39 @@ interface SettingsPageProps {
 type Theme = "light" | "dark" | "system";
 
 export function SettingsPage({ dashboardData }: SettingsPageProps) {
-  const { showSuccess } = useToast();
+  const { showSuccess, showError } = useToast();
+  const { profileRepo, userId } = useAppContext();
   const profile = dashboardData.profile;
 
-  // Local settings state (UI-only, not persisted to backend)
-  const [theme, setTheme] = useState<Theme>(profile.themePreference);
+  const [theme, setTheme]               = useState<Theme>(profile.themePreference);
   const [notifyStreak, setNotifyStreak] = useState(true);
   const [notifyGoals, setNotifyGoals]   = useState(true);
   const [notifyXp, setNotifyXp]         = useState(false);
   const [dailyMinutes, setDailyMinutes] = useState(15);
   const [autoAdvance, setAutoAdvance]   = useState(false);
+  const [saving, setSaving]             = useState(false);
 
-  const handleSave = () => {
-    showSuccess("Settings saved", "Your preferences have been updated.");
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const settings: UserSettings = {
+        themePreference: theme,
+        dailyGoalMinutes: dailyMinutes,
+        autoAdvance,
+        notifications: {
+          streak: notifyStreak,
+          goalComplete: notifyGoals,
+          xpMilestone: notifyXp,
+        },
+      };
+      await profileRepo.updateProfile(userId, { settings });
+      showSuccess("Settings saved", "Your preferences have been updated.");
+    } catch (err) {
+      console.error("[SettingsPage] Failed to save settings:", err);
+      showError("Save failed", "Could not save your settings. Please try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -182,8 +204,8 @@ export function SettingsPage({ dashboardData }: SettingsPageProps) {
           >
             Cancel
           </button>
-          <button onClick={handleSave} style={{ background: "var(--accent)" }}>
-            Save Changes
+          <button onClick={handleSave} style={{ background: "var(--accent)" }} disabled={saving}>
+            {saving ? "Saving…" : "Save Changes"}
           </button>
         </div>
       </div>

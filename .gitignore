@@ -161,3 +161,6 @@ playwright-report/
 # The source decks + audio under packages/content/{data,audio}/ are checked in.
 /packages/app/public/assets/data/
 /packages/app/public/assets/audio/
+
+
+.agent_notes
