@@ -1,0 +1,522 @@
+- generic [ref=e2]:
+  - generic [ref=e19]:
+    - generic [ref=e20]:
+      - heading "1000 Words" [level=1] [ref=e21]
+      - generic [ref=e22]:
+        - button "Settings" [ref=e23] [cursor=pointer]: ⚙
+        - button "Sign Out" [ref=e24] [cursor=pointer]
+    - article [ref=e25] [cursor=pointer]:
+      - generic [ref=e26]:
+        - img "Ari Navarro avatar" [ref=e27]
+        - generic [ref=e28]:
+          - heading "Ari Navarro" [level=2] [ref=e29]
+          - paragraph [ref=e30]: Focused on accelerated Spanish learning in 15-minute sprints.
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - term [ref=e33]: Email
+          - definition [ref=e34]: demo
+        - generic [ref=e35]:
+          - term [ref=e36]: Joined
+          - definition [ref=e37]: May 15, 2026
+        - generic [ref=e38]:
+          - term [ref=e39]: Timezone
+          - definition [ref=e40]: America/New_York
+    - article [ref=e41] [cursor=pointer]:
+      - paragraph [ref=e42]: Level
+      - paragraph [ref=e43]: "12"
+      - progressbar "XP progress to next level" [ref=e44]
+      - paragraph [ref=e46]: 2,840 / 3,200 XP
+      - generic [ref=e47]:
+        - generic "[streak]" [ref=e48]:
+          - text: 🔥[streak]
+          - generic [ref=e49]: "[streak]"
+        - generic [ref=e50]: "9"
+        - generic [ref=e51]: day streak
+    - article [ref=e52]:
+      - heading "Daily Goals" [level=3] [ref=e54] [cursor=pointer]
+      - list [ref=e55]:
+        - listitem [ref=e56] [cursor=pointer]:
+          - generic [ref=e57]:
+            - generic [ref=e58]: Complete 2 Lessons
+            - generic [ref=e59]: Active
+          - paragraph [ref=e62]: 1 / 2 · 120 XP
+        - listitem [ref=e63] [cursor=pointer]:
+          - generic [ref=e64]:
+            - generic [ref=e65]: Earn 250 XP
+            - generic [ref=e66]: Active
+          - paragraph [ref=e69]: 180 / 250 · 160 XP
+        - listitem [ref=e70] [cursor=pointer]:
+          - generic [ref=e71]:
+            - generic [ref=e72]: Review 30 Cards
+            - generic [ref=e73]: Done
+          - paragraph [ref=e76]: 30 / 30 · 140 XP
+        - listitem [ref=e77] [cursor=pointer]:
+          - generic [ref=e78]:
+            - generic [ref=e79]: Maintain Streak
+            - generic [ref=e80]: Done
+          - paragraph [ref=e83]: 1 / 1 · 50 XP
+        - listitem [ref=e84] [cursor=pointer]:
+          - generic [ref=e85]:
+            - generic [ref=e86]: Practice Pronunciation
+            - generic [ref=e87]: Upcoming
+          - paragraph [ref=e89]: 0 / 10 · 80 XP
+    - article [ref=e90]:
+      - generic [ref=e91]:
+        - heading "Lesson Track" [level=3] [ref=e92] [cursor=pointer]
+        - generic [ref=e93]: 1 of 12 complete
+      - list [ref=e94]:
+        - listitem [ref=e95] [cursor=pointer]:
+          - generic [ref=e96]:
+            - generic [ref=e97]: Core Greetings
+            - generic [ref=e98]: Complete
+          - paragraph [ref=e99]: High-frequency introductions and basic social phrases every beginner needs.
+          - generic [ref=e103]: 100% · 120 XP
+        - listitem [ref=e104] [cursor=pointer]:
+          - generic [ref=e105]:
+            - generic [ref=e106]: Daily Actions
+            - generic [ref=e107]: In Progress
+          - paragraph [ref=e108]: The most common Spanish verbs used in everyday present tense conversation.
+          - generic [ref=e112]: 64% · 180 XP
+        - listitem [ref=e113] [cursor=pointer]:
+          - generic [ref=e114]:
+            - generic [ref=e115]: Travel Basics
+            - generic [ref=e116]: Locked
+          - paragraph [ref=e117]: Practical vocabulary for airports, transit, lodging, and asking for directions.
+          - generic [ref=e120]: 0% · 220 XP
+        - listitem [ref=e121] [cursor=pointer]:
+          - generic [ref=e122]:
+            - generic [ref=e123]: Food & Dining
+            - generic [ref=e124]: Locked
+          - paragraph [ref=e125]: Restaurant vocabulary, ordering food, and understanding menus.
+          - generic [ref=e128]: 0% · 200 XP
+        - listitem [ref=e129] [cursor=pointer]:
+          - generic [ref=e130]:
+            - generic [ref=e131]: Numbers & Time
+            - generic [ref=e132]: Locked
+          - paragraph [ref=e133]: Numbers, telling time, days, months, and date expressions.
+          - generic [ref=e136]: 0% · 140 XP
+        - listitem [ref=e137] [cursor=pointer]:
+          - generic [ref=e138]:
+            - generic [ref=e139]: Shopping & Prices
+            - generic [ref=e140]: Locked
+          - paragraph [ref=e141]: Vocabulary for markets, stores, bargaining, and handling money.
+          - generic [ref=e144]: 0% · 190 XP
+        - listitem [ref=e145] [cursor=pointer]:
+          - generic [ref=e146]:
+            - generic [ref=e147]: Emotions & Feelings
+            - generic [ref=e148]: Locked
+          - paragraph [ref=e149]: Express how you feel, understand emotional context, and build connection.
+          - generic [ref=e152]: 0% · 260 XP
+        - listitem [ref=e153] [cursor=pointer]:
+          - generic [ref=e154]:
+            - generic [ref=e155]: Nature & Environment
+            - generic [ref=e156]: Locked
+          - paragraph [ref=e157]: Landscape, weather, animals, and the natural world in Spanish.
+          - generic [ref=e160]: 0% · 300 XP
+        - listitem [ref=e161] [cursor=pointer]:
+          - generic [ref=e162]:
+            - generic [ref=e163]: Body & Health
+            - generic [ref=e164]: Locked
+          - paragraph [ref=e165]: Medical vocabulary, body parts, describing symptoms, and health-related phrases.
+          - generic [ref=e168]: 0% · 280 XP
+        - listitem [ref=e169] [cursor=pointer]:
+          - generic [ref=e170]:
+            - generic [ref=e171]: Work & Career
+            - generic [ref=e172]: Locked
+          - paragraph [ref=e173]: Office vocabulary, professional introductions, and workplace communication.
+          - generic [ref=e176]: 0% · 210 XP
+        - listitem [ref=e177] [cursor=pointer]:
+          - generic [ref=e178]:
+            - generic [ref=e179]: Family & Relationships
+            - generic [ref=e180]: Locked
+          - paragraph [ref=e181]: Terms for family members, describing relationships, and personal connections.
+          - generic [ref=e184]: 0% · 150 XP
+        - listitem [ref=e185] [cursor=pointer]:
+          - generic [ref=e186]:
+            - generic [ref=e187]: Politics & Society
+            - generic [ref=e188]: Locked
+          - paragraph [ref=e189]: News vocabulary, civic terms, current events, and social discussion phrases.
+          - generic [ref=e192]: 0% · 320 XP
+    - article [ref=e193]:
+      - generic [ref=e194]:
+        - heading "Achievements" [level=3] [ref=e195] [cursor=pointer]
+        - generic [ref=e196]: 2 unlocked
+      - list [ref=e197]:
+        - listitem [ref=e198] [cursor=pointer]:
+          - generic "[*]" [ref=e200]:
+            - text: 🌟[*]
+            - generic [ref=e201]: "[*]"
+          - generic [ref=e202]:
+            - generic [ref=e203]:
+              - generic [ref=e204]: First Steps
+              - generic [ref=e205]:
+                - generic [ref=e206]: common
+                - generic [ref=e207]: Unlocked
+            - paragraph [ref=e208]: Complete your very first lesson and begin your journey.
+            - paragraph [ref=e209]: 100 XP · Earned May 15, 2026
+        - listitem [ref=e210] [cursor=pointer]:
+          - generic "[FIRE]" [ref=e212]:
+            - text: 🔥[FIRE]
+            - generic [ref=e213]: "[FIRE]"
+          - generic [ref=e214]:
+            - generic [ref=e215]:
+              - generic [ref=e216]: Streak Keeper
+              - generic [ref=e217]:
+                - generic [ref=e218]: rare
+                - generic [ref=e219]: Unlocked
+            - paragraph [ref=e220]: Maintain a 7-day learning streak without missing a day.
+            - paragraph [ref=e221]: 280 XP · Earned Jun 8, 2026
+        - listitem [ref=e222] [cursor=pointer]:
+          - generic "[BOLT]" [ref=e224]:
+            - text: ⚡[BOLT]
+            - generic [ref=e225]: "[BOLT]"
+          - generic [ref=e226]:
+            - generic [ref=e227]:
+              - generic [ref=e228]: Speed Learner
+              - generic [ref=e229]:
+                - generic [ref=e230]: epic
+                - generic [ref=e231]: In Progress
+            - paragraph [ref=e232]: Earn 500 XP in a single day through focused study sessions.
+            - paragraph [ref=e233]: 400 XP
+        - listitem [ref=e234] [cursor=pointer]:
+          - generic "[BOOK]" [ref=e236]:
+            - text: 📖[BOOK]
+            - generic [ref=e237]: "[BOOK]"
+          - generic [ref=e238]:
+            - generic [ref=e239]:
+              - generic [ref=e240]: Vocabulary Builder
+              - generic [ref=e241]:
+                - generic [ref=e242]: rare
+                - generic [ref=e243]: In Progress
+            - paragraph [ref=e244]: Successfully learn and review 100 unique vocabulary words.
+            - paragraph [ref=e245]: 350 XP
+        - listitem [ref=e246] [cursor=pointer]:
+          - generic "[CUP]" [ref=e248]:
+            - text: 🏆[CUP]
+            - generic [ref=e249]: "[CUP]"
+          - generic [ref=e250]:
+            - generic [ref=e251]:
+              - generic [ref=e252]: Track Champion
+              - generic [ref=e253]:
+                - generic [ref=e254]: epic
+                - generic [ref=e255]: In Progress
+            - paragraph [ref=e256]: Complete every lesson in the Core Greetings track.
+            - paragraph [ref=e257]: 600 XP
+        - listitem [ref=e258] [cursor=pointer]:
+          - generic "[CROWN]" [ref=e260]:
+            - text: 👑[CROWN]
+            - generic [ref=e261]: "[CROWN]"
+          - generic [ref=e262]:
+            - generic [ref=e263]:
+              - generic [ref=e264]: Consistency King
+              - generic [ref=e265]:
+                - generic [ref=e266]: legendary
+                - generic [ref=e267]: Locked
+            - paragraph [ref=e268]: Reach a 30-day streak — true dedication to your craft.
+            - paragraph [ref=e269]: 1200 XP
+        - listitem [ref=e270] [cursor=pointer]:
+          - generic "[MAP]" [ref=e272]:
+            - text: 🗺️[MAP]
+            - generic [ref=e273]: "[MAP]"
+          - generic [ref=e274]:
+            - generic [ref=e275]:
+              - generic [ref=e276]: Explorer
+              - generic [ref=e277]:
+                - generic [ref=e278]: rare
+                - generic [ref=e279]: Locked
+            - paragraph [ref=e280]: Start lessons across three different learning tracks.
+            - paragraph [ref=e281]: 450 XP
+        - listitem [ref=e282] [cursor=pointer]:
+          - generic "[GEM]" [ref=e284]:
+            - text: 💎[GEM]
+            - generic [ref=e285]: "[GEM]"
+          - generic [ref=e286]:
+            - generic [ref=e287]:
+              - generic [ref=e288]: Perfect Score
+              - generic [ref=e289]:
+                - generic [ref=e290]: epic
+                - generic [ref=e291]: Locked
+            - paragraph [ref=e292]: Complete a full study session with 100% accuracy — no misses.
+            - paragraph [ref=e293]: 500 XP
+        - listitem [ref=e294] [cursor=pointer]:
+          - generic "[OWL]" [ref=e296]:
+            - text: 🦉[OWL]
+            - generic [ref=e297]: "[OWL]"
+          - generic [ref=e298]:
+            - generic [ref=e299]:
+              - generic [ref=e300]: Night Owl
+              - generic [ref=e301]:
+                - generic [ref=e302]: common
+                - generic [ref=e303]: Locked
+            - paragraph [ref=e304]: Complete a study session after 10 PM — dedication never sleeps.
+            - paragraph [ref=e305]: 200 XP
+        - listitem [ref=e306] [cursor=pointer]:
+          - generic "[DAWN]" [ref=e308]:
+            - text: 🌅[DAWN]
+            - generic [ref=e309]: "[DAWN]"
+          - generic [ref=e310]:
+            - generic [ref=e311]:
+              - generic [ref=e312]: Early Bird
+              - generic [ref=e313]:
+                - generic [ref=e314]: common
+                - generic [ref=e315]: Locked
+            - paragraph [ref=e316]: Complete a study session before 8 AM — morning momentum.
+            - paragraph [ref=e317]: 200 XP
+        - listitem [ref=e318] [cursor=pointer]:
+          - generic "[GLOBE]" [ref=e320]:
+            - text: 🌐[GLOBE]
+            - generic [ref=e321]: "[GLOBE]"
+          - generic [ref=e322]:
+            - generic [ref=e323]:
+              - generic [ref=e324]: Polyglot Path
+              - generic [ref=e325]:
+                - generic [ref=e326]: epic
+                - generic [ref=e327]: Locked
+            - paragraph [ref=e328]: Finish 5 lessons across 2+ different learning tracks.
+            - paragraph [ref=e329]: 550 XP
+        - listitem [ref=e330] [cursor=pointer]:
+          - generic "[CARDS]" [ref=e332]:
+            - text: 🃏[CARDS]
+            - generic [ref=e333]: "[CARDS]"
+          - generic [ref=e334]:
+            - generic [ref=e335]:
+              - generic [ref=e336]: Flashcard Fanatic
+              - generic [ref=e337]:
+                - generic [ref=e338]: legendary
+                - generic [ref=e339]: Locked
+            - paragraph [ref=e340]: Review 500 flashcards total across all study sessions.
+            - paragraph [ref=e341]: 750 XP
+    - article [ref=e342]:
+      - heading "Rewards Store" [level=3] [ref=e344] [cursor=pointer]
+      - list [ref=e345]:
+        - listitem [ref=e346] [cursor=pointer]:
+          - generic "[RUNNER]" [ref=e348]:
+            - text: 🧑‍🚀[RUNNER]
+            - generic [ref=e349]: "[RUNNER]"
+          - generic [ref=e350]:
+            - generic [ref=e351]:
+              - generic [ref=e352]: Orbit Runner
+              - generic [ref=e353]: 600 XP
+            - paragraph [ref=e354]: Minimal geometric avatar with high contrast styling and sharp lines.
+            - generic [ref=e355]:
+              - generic [ref=e356]: Owned
+              - generic [ref=e357]: Equipped
+        - listitem [ref=e358] [cursor=pointer]:
+          - generic "[CODER]" [ref=e360]:
+            - text: 🧑‍💻[CODER]
+            - generic [ref=e361]: "[CODER]"
+          - generic [ref=e362]:
+            - generic [ref=e363]:
+              - generic [ref=e364]: Sunset Coder
+              - generic [ref=e365]: 800 XP
+            - paragraph [ref=e366]: Warm retro-inspired avatar with golden hour tones.
+            - generic [ref=e368]: Available
+        - listitem [ref=e369] [cursor=pointer]:
+          - generic "[WIZARD]" [ref=e371]:
+            - text: 🧙[WIZARD]
+            - generic [ref=e372]: "[WIZARD]"
+          - generic [ref=e373]:
+            - generic [ref=e374]:
+              - generic [ref=e375]: Galaxy Wanderer
+              - generic [ref=e376]: 1,200 XP
+            - paragraph [ref=e377]: Deep space explorer avatar for the dedicated learner.
+            - generic [ref=e379]: Available
+        - listitem [ref=e380] [cursor=pointer]:
+          - generic "[#]" [ref=e382]:
+            - text: 🔳[#]
+            - generic [ref=e383]: "[#]"
+          - generic [ref=e384]:
+            - generic [ref=e385]:
+              - generic [ref=e386]: Redline Frame
+              - generic [ref=e387]: 450 XP
+            - paragraph [ref=e388]: Swiss-inspired red edge frame — bold, minimal, unmistakable.
+            - generic [ref=e389]:
+              - generic [ref=e390]: Owned
+              - generic [ref=e391]: Equipped
+        - listitem [ref=e392] [cursor=pointer]:
+          - generic "[NEON]" [ref=e394]:
+            - text: 🟦[NEON]
+            - generic [ref=e395]: "[NEON]"
+          - generic [ref=e396]:
+            - generic [ref=e397]:
+              - generic [ref=e398]: Neon Edge
+              - generic [ref=e399]: 550 XP
+            - paragraph [ref=e400]: Electric blue neon glow border for a futuristic look.
+            - generic [ref=e402]: Available
+        - listitem [ref=e403] [cursor=pointer]:
+          - generic "[FRAME]" [ref=e405]:
+            - text: ⬜[FRAME]
+            - generic [ref=e406]: "[FRAME]"
+          - generic [ref=e407]:
+            - generic [ref=e408]:
+              - generic [ref=e409]: Minimalist Frame
+              - generic [ref=e410]: 350 XP
+            - paragraph [ref=e411]: Clean hairline border — understated elegance for serious learners.
+            - generic [ref=e413]: Available
+        - listitem [ref=e414] [cursor=pointer]:
+          - generic "[!]" [ref=e416]:
+            - text: ⚡[!]
+            - generic [ref=e417]: "[!]"
+          - generic [ref=e418]:
+            - generic [ref=e419]:
+              - generic [ref=e420]: Lightning Prefix
+              - generic [ref=e421]: 300 XP
+            - paragraph [ref=e422]: Adds an electric accent before your display name on profile cards.
+            - generic [ref=e424]: Available
+        - listitem [ref=e425] [cursor=pointer]:
+          - generic "[CROWN]" [ref=e427]:
+            - text: 👑[CROWN]
+            - generic [ref=e428]: "[CROWN]"
+          - generic [ref=e429]:
+            - generic [ref=e430]:
+              - generic [ref=e431]: Crown Prefix
+              - generic [ref=e432]: 900 XP
+            - paragraph [ref=e433]: Mark yourself as royalty with a golden crown before your name.
+            - generic [ref=e435]: Available
+        - listitem [ref=e436] [cursor=pointer]:
+          - generic "[SUN]" [ref=e438]:
+            - text: ☀️[SUN]
+            - generic [ref=e439]: "[SUN]"
+          - generic [ref=e440]:
+            - generic [ref=e441]:
+              - generic [ref=e442]: Solar Flare
+              - generic [ref=e443]: 700 XP
+            - paragraph [ref=e444]: Warm amber and orange accent tones for a radiant profile.
+            - generic [ref=e446]: Available
+        - listitem [ref=e447] [cursor=pointer]:
+          - generic "[MEDAL]" [ref=e449]:
+            - text: 🏅[MEDAL]
+            - generic [ref=e450]: "[MEDAL]"
+          - generic [ref=e451]:
+            - generic [ref=e452]:
+              - generic [ref=e453]: Golden Trim
+              - generic [ref=e454]: 1,500 XP
+            - paragraph [ref=e455]: Legendary-tier golden border for the most dedicated learners.
+            - generic [ref=e457]: Available
+    - article [ref=e458]:
+      - heading "Recent Activity" [level=3] [ref=e460]
+      - list [ref=e461]:
+        - listitem [ref=e462]:
+          - generic "[OK]" [ref=e464]:
+            - text: ✅[OK]
+            - generic [ref=e465]: "[OK]"
+          - generic [ref=e466]:
+            - generic [ref=e467]:
+              - generic [ref=e468]: Lesson Progress
+              - generic [ref=e469]: Jun 10
+            - paragraph [ref=e470]: Daily Actions reached 64% completion — 12 new words reviewed.
+        - listitem [ref=e471]:
+          - generic "[AIM]" [ref=e473]:
+            - text: 🎯[AIM]
+            - generic [ref=e474]: "[AIM]"
+          - generic [ref=e475]:
+            - generic [ref=e476]:
+              - generic [ref=e477]: Achievement Progress
+              - generic [ref=e478]: Jun 10
+            - paragraph [ref=e479]: Speed Learner is now at 72% — keep earning XP today!
+        - listitem [ref=e480]:
+          - generic "[STORE]" [ref=e482]:
+            - text: 🛒[STORE]
+            - generic [ref=e483]: "[STORE]"
+          - generic [ref=e484]:
+            - generic [ref=e485]:
+              - generic [ref=e486]: Store Unlock
+              - generic [ref=e487]: Jun 10
+            - paragraph [ref=e488]: Redline Frame equipped to your profile.
+        - listitem [ref=e489]:
+          - generic "[MEDAL]" [ref=e491]:
+            - text: 🏅[MEDAL]
+            - generic [ref=e492]: "[MEDAL]"
+          - generic [ref=e493]:
+            - generic [ref=e494]:
+              - generic [ref=e495]: Daily Goal Complete
+              - generic [ref=e496]: Jun 9
+            - paragraph [ref=e497]: Reviewed 30 cards — Daily Goal completed for +140 XP.
+        - listitem [ref=e498]:
+          - generic "[FIRE]" [ref=e500]:
+            - text: 🔥[FIRE]
+            - generic [ref=e501]: "[FIRE]"
+          - generic [ref=e502]:
+            - generic [ref=e503]:
+              - generic [ref=e504]: Streak Milestone
+              - generic [ref=e505]: Jun 9
+            - paragraph [ref=e506]: 9-day streak reached! Streak Keeper achievement earned.
+        - listitem [ref=e507]:
+          - generic "[CUP]" [ref=e509]:
+            - text: 🏆[CUP]
+            - generic [ref=e510]: "[CUP]"
+          - generic [ref=e511]:
+            - generic [ref=e512]:
+              - generic [ref=e513]: Achievement Unlocked
+              - generic [ref=e514]: Jun 8
+            - paragraph [ref=e515]: Streak Keeper earned — 7-day streak milestone hit for +280 XP.
+        - listitem [ref=e516]:
+          - generic "[STAR]" [ref=e518]:
+            - text: 🌟[STAR]
+            - generic [ref=e519]: "[STAR]"
+          - generic [ref=e520]:
+            - generic [ref=e521]:
+              - generic [ref=e522]: Lesson Complete
+              - generic [ref=e523]: Jun 7
+            - paragraph [ref=e524]: Core Greetings fully completed — 100% mastery, +120 XP earned.
+        - listitem [ref=e525]:
+          - generic "[UP]" [ref=e527]:
+            - text: ⬆️[UP]
+            - generic [ref=e528]: "[UP]"
+          - generic [ref=e529]:
+            - generic [ref=e530]:
+              - generic [ref=e531]: Level Up
+              - generic [ref=e532]: Jun 5
+            - paragraph [ref=e533]: Reached Level 12! New lessons and rewards now available.
+        - listitem [ref=e534]:
+          - generic "[BOOK]" [ref=e536]:
+            - text: 📖[BOOK]
+            - generic [ref=e537]: "[BOOK]"
+          - generic [ref=e538]:
+            - generic [ref=e539]:
+              - generic [ref=e540]: Session started
+              - generic [ref=e541]: Jun 10
+            - paragraph [ref=e542]: Began Daily Actions review session
+        - listitem [ref=e543]:
+          - generic "[TARGET]" [ref=e545]:
+            - text: 🎯[TARGET]
+            - generic [ref=e546]: "[TARGET]"
+          - generic [ref=e547]:
+            - generic [ref=e548]:
+              - generic [ref=e549]: Daily goal reached
+              - generic [ref=e550]: Jun 9
+            - paragraph [ref=e551]: Completed 15-minute study goal
+        - listitem [ref=e552]:
+          - generic "[FIRE]" [ref=e554]:
+            - text: 🔥[FIRE]
+            - generic [ref=e555]: "[FIRE]"
+          - generic [ref=e556]:
+            - generic [ref=e557]:
+              - generic [ref=e558]: Streak milestone
+              - generic [ref=e559]: Jun 8
+            - paragraph [ref=e560]: 9-day streak — keep going!
+        - listitem [ref=e561]:
+          - generic "[CHECK]" [ref=e563]:
+            - text: ✅[CHECK]
+            - generic [ref=e564]: "[CHECK]"
+          - generic [ref=e565]:
+            - generic [ref=e566]:
+              - generic [ref=e567]: Words mastered
+              - generic [ref=e568]: Jun 7
+            - paragraph [ref=e569]: Marked 12 new vocabulary words as mastered
+  - navigation "Main navigation" [ref=e570]:
+    - button "Home" [ref=e571] [cursor=pointer]:
+      - generic [ref=e572]: ⌂
+      - generic [ref=e573]: Home
+    - button "Lessons" [ref=e574] [cursor=pointer]:
+      - generic [ref=e575]: 📖
+      - generic [ref=e576]: Lessons
+    - button "Goals" [ref=e577] [cursor=pointer]:
+      - generic [ref=e578]: 🎯
+      - generic [ref=e579]: Goals
+    - button "Shop" [ref=e580] [cursor=pointer]:
+      - generic [ref=e581]: 🛍️
+      - generic [ref=e582]: Shop
+    - button "Profile" [ref=e583] [cursor=pointer]:
+      - generic [ref=e584]: 👤
+      - generic [ref=e585]: Profile

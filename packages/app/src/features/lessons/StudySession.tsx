@@ -4,13 +4,15 @@ import type { DashboardData } from "../../data/account/repository";
 import { loadWordsForLessonId, type WordEntry } from "../../lib/wordData";
 import { useToast } from "../shared/Toast";
 import { Breadcrumb } from "../shared/Breadcrumb";
+import { useAppContext } from "../../data/AppContext";
+import { buildSession, scheduleReview, initialState } from "@1000words/engine";
+import type { Card } from "@1000words/content";
+import type { Rating } from "@1000words/engine";
 
 interface StudySessionProps {
   dashboardData: DashboardData;
   lessonId: string;
 }
-
-type Rating = "again" | "hard" | "good" | "easy";
 
 interface SessionCard extends WordEntry {
   cardKey: string;
@@ -104,6 +106,7 @@ function SessionComplete({
 export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
   const lesson = dashboardData.lessons.find((l) => l.lessonId === lessonId);
   const { showXp, showSuccess } = useToast();
+  const { userId, progressStore, profileRepo, goalRepo } = useAppContext();
 
   const [cards, setCards]           = useState<SessionCard[]>([]);
   const [cardIndex, setCardIndex]   = useState(0);
@@ -113,12 +116,36 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
   const [isDone, setIsDone]         = useState(false);
   const [sessionKey, setSessionKey] = useState(0);
 
+  // Keep a live reference to FSRS progress so handleRating can always write
+  // the latest state without needing it in the dependency array.
+  const progressRef = useRef<Record<string, import("@1000words/engine").FsrsState>>({});
+  const startTimesRef = useRef<Record<string, number>>({});
+
   useEffect(() => {
     if (!lesson) return;
     setIsLoading(true);
     loadWordsForLessonId(lessonId, lesson.difficulty, 20)
-      .then((words) => {
-        setCards(words.map((w, i) => ({ ...w, cardKey: `${w.id}-${i}` })));
+      .then(async (words) => {
+        // Derive lang pair from first card ID (e.g. "es-0001" → "en-es")
+        const langPair = (words[0]?.langPair ?? "en-es") as import("@1000words/content").LangPair;
+
+        // Load FSRS progress from backend, then order cards by due date.
+        let progress: Record<string, import("@1000words/engine").FsrsState> = {};
+        try {
+          progress = await progressStore.getProgress(userId, langPair);
+        } catch (err) {
+          console.warn("[StudySession] Failed to load progress, starting fresh:", err);
+        }
+        progressRef.current = progress;
+
+        const ordered = buildSession(words as unknown as Card[], progress, {
+          now: new Date(),
+          newCardsPerDay: 20,
+          maxCards: 20,
+        });
+        // If all cards are not yet due, fall back to the original word order.
+        const sessionWords = ordered.length > 0 ? ordered : words;
+        setCards((sessionWords as WordEntry[]).map((w, i) => ({ ...w, cardKey: `${w.id}-${i}` })));
         setIsLoading(false);
       })
       .catch(() => {
@@ -130,7 +157,7 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
         setCards(fallback);
         setIsLoading(false);
       });
-  }, [lessonId, lesson, sessionKey]);
+  }, [lessonId, lesson, sessionKey, userId, progressStore]);
 
   const currentCard = cards[cardIndex];
   const totalCards  = cards.length;
@@ -138,16 +165,40 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
 
   const handleRating = (rating: Rating) => {
     if (!currentCard) return;
+
+    const now = new Date();
+    const elapsedMs = now.getTime() - (startTimesRef.current[currentCard.id] ?? now.getTime());
+
+    // Compute next FSRS state and persist (fire-and-forget).
+    if (!currentCard.id.startsWith("fb-")) {
+      const currentState = progressRef.current[currentCard.id] ?? initialState(now);
+      const nextState = scheduleReview(currentState, rating, now);
+      progressRef.current = { ...progressRef.current, [currentCard.id]: nextState };
+      progressStore.upsertProgress(userId, currentCard.id, nextState).catch(console.error);
+      progressStore.logReview(userId, currentCard.id, rating, elapsedMs).catch(console.error);
+    }
+
     const newResults = [...results, { cardId: currentCard.id, word: currentCard.word, rating }];
     setResults(newResults);
+
     if (cardIndex >= totalCards - 1) {
       const correct = newResults.filter((r) => r.rating === "good" || r.rating === "easy").length;
       const accuracy = Math.round((correct / newResults.length) * 100);
       const earnedXp = Math.round((lesson?.xpReward ?? 100) * (accuracy / 100));
+
+      // Persist XP gain and goal progress (fire-and-forget).
+      if (earnedXp > 0) {
+        profileRepo.addXp(userId, earnedXp).catch(console.error);
+      }
+      goalRepo.incrementGoal(userId, "cards_reviewed", newResults.length).catch(console.error);
+
       showXp(earnedXp, `${lesson?.title ?? "Lesson"} complete`);
       if (accuracy === 100) showSuccess("Perfect score!", "You aced every card 🎉");
       setIsDone(true);
     } else {
+      // Record the start time for the next card.
+      const nextCard = cards[cardIndex + 1];
+      if (nextCard) startTimesRef.current[nextCard.id] = Date.now();
       setCardIndex((i) => i + 1);
       setIsFlipped(false);
     }

@@ -1,0 +1,19 @@
+- generic [ref=e4]:
+  - figure [ref=e5]:
+    - img "Dashboard preview" [ref=e6]
+  - generic [ref=e7]:
+    - heading "Sign In" [level=1] [ref=e8]
+    - paragraph [ref=e9]: Access your learner profile, XP history, and rewards dashboard.
+  - generic [ref=e10]:
+    - generic [ref=e11]:
+      - text: Email
+      - textbox "Email" [ref=e12]:
+        - /placeholder: you@example.com
+        - text: demo
+    - generic [ref=e13]:
+      - text: Password
+      - textbox "Password" [ref=e14]:
+        - /placeholder: ••••••••
+        - text: demo
+    - button "Sign In" [ref=e15] [cursor=pointer]
+    - paragraph [ref=e16]: "Demo credentials pre-filled: demo / demo"

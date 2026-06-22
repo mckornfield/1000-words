@@ -1,7 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { appConfig } from "./config/appConfig";
+import { supabase } from "./lib/supabase";
 import { localAccountRepository } from "./data/account/repository";
-import { localAuthRepository, type AuthSession } from "./data/auth/repository";
+import { localAuthRepository } from "./data/auth/repository";
+import { createSupabaseAuthRepository } from "./data/auth/supabaseAuthRepository";
+import { createSupabaseProfileRepository } from "./data/profile/supabaseProfileRepository";
+import { createMockProfileRepository } from "./data/profile/mockProfileRepository";
+import { createSupabaseAchievementRepository } from "./data/achievements/supabaseAchievementRepository";
+import { createMockAchievementRepository } from "./data/achievements/mockAchievementRepository";
+import { createSupabaseInventoryRepository } from "./data/inventory/supabaseInventoryRepository";
+import { createMockInventoryRepository } from "./data/inventory/mockInventoryRepository";
+import { createSupabaseDailyGoalRepository } from "./data/goals/supabaseDailyGoalRepository";
+import { createMockDailyGoalRepository } from "./data/goals/mockDailyGoalRepository";
+import { createSupabaseStatsRepository } from "./data/stats/supabaseStatsRepository";
+import { createMockStatsRepository } from "./data/stats/mockStatsRepository";
+import { createProgressStore } from "./data/progress";
+import { createMockProgressStore } from "./data/progressStore.mock";
+import { AppContext } from "./data/AppContext";
+import type { AppContextValue, AuthSession } from "./data/types";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { LoginPage } from "./features/login/LoginPage";
 import { LessonsList } from "./features/lessons/LessonsList";
@@ -20,87 +36,129 @@ import { NavBar } from "./features/shared/NavBar";
 import { ToastProvider } from "./features/shared/Toast";
 import { parseRoute, navigate, requiresAuth, type ParsedRoute } from "./lib/router";
 
+// ─── Singleton repos created once outside the component ───────────────────────
+const supabaseAuthRepo = createSupabaseAuthRepository();
+const supabaseProgressStore = createProgressStore(supabase);
+
 // ─── App shell ────────────────────────────────────────────────────────────────
 export function App() {
-  // Restore session from localStorage on first render.
-  const [session, setSession] = useState<AuthSession | null>(() => localAuthRepository.getSession());
+  const isDemo = appConfig.demoLoginEnabled;
+
+  // Session state. Demo mode restores synchronously from localStorage;
+  // Supabase mode initialises asynchronously and listens for changes.
+  const [session, setSession] = useState<AuthSession | null>(() => {
+    if (!isDemo) return null;
+    const local = localAuthRepository.getSession();
+    return local ? { userId: local.userId, email: "demo" } : null;
+  });
+  const [authReady, setAuthReady] = useState(isDemo);
+  const [dataError, setDataError] = useState<string | null>(null);
   const [currentRoute, setCurrentRoute] = useState<ParsedRoute>(() => parseRoute());
 
-  // A non-null dataError means the account data failed to load for the active
-  // session. We display a recoverable error message rather than a white screen.
-  const [dataError, setDataError] = useState<string | null>(null);
+  // For Supabase mode: async auth init + subscription.
+  useEffect(() => {
+    if (isDemo) return;
+    supabaseAuthRepo.getSession().then((s) => {
+      setSession(s);
+      setAuthReady(true);
+    }).catch(() => setAuthReady(true));
+    const unsub = supabaseAuthRepo.onAuthChange((s) => setSession(s));
+    return unsub;
+  }, [isDemo]);
 
-  // Sync the route state when the user navigates with browser back/forward.
+  // Sync route when user navigates with browser back/forward.
   useEffect(() => {
     const onPopState = () => setCurrentRoute(parseRoute());
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
-  // Guard routes: authenticated users must not access /login;
-  // unauthenticated users are redirected to /login.
-  // If route requires auth but user is not authenticated, redirect to /login.
+  // Route guard.
   useEffect(() => {
+    if (!authReady) return;
     const routeNeedsAuth = requiresAuth(currentRoute.path);
-    if (!session && routeNeedsAuth) {
-      navigate("/login");
-      return;
-    }
-    if (session && currentRoute.path === "/login") {
-      navigate("/dashboard");
-      return;
-    }
-  }, [session, currentRoute]);
+    if (!session && routeNeedsAuth) { navigate("/login"); return; }
+    if (session && currentRoute.path === "/login") { navigate("/dashboard"); return; }
+  }, [session, currentRoute, authReady]);
 
-  // Load dashboard data for the current session. Wrapped in try/catch so a
-  // corrupt fixture or missing userId doesn't crash the entire React tree.
+  // Static dashboard data (fixture — lessons, achievements catalog, store catalog).
+  // For demo mode this is synchronous. For Supabase mode, the fixture still supplies
+  // the static content; live user state comes via the repos in AppContext.
   const dashboardData = useMemo(() => {
     if (!session) return null;
+    // Demo mode userId is "Usr-001"; Supabase mode uses UUID.
+    // Fixture lookup works in demo mode; in Supabase mode we fall back to a
+    // hardcoded fixture userId so static content (lesson catalog etc.) still renders.
+    const fixtureUserId = isDemo ? session.userId : "Usr-001";
     try {
-      return localAccountRepository.getDashboardData(session.userId);
+      return localAccountRepository.getDashboardData(fixtureUserId);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error loading account data.";
-      console.error(`[App] Failed to load dashboard data for userId=${session.userId}:`, err);
+      console.error(`[App] Failed to load dashboard data:`, err);
       setDataError(`Unable to load your account data. ${message}`);
       return null;
     }
-  }, [session]);
+  }, [session, isDemo]);
 
-  // Decode the avatar URI from the profile's stored Base64 string.
+  // Avatar from fixture profile.
   const avatarSrc = useMemo(() => {
     if (!dashboardData) return "";
-    try {
-      return localAccountRepository.decodeProfileAvatar(dashboardData.profile);
-    } catch (err) {
-      console.error("[App] Failed to decode profile avatar:", err);
-      return ""; // Render broken-image placeholder rather than crashing.
-    }
+    try { return localAccountRepository.decodeProfileAvatar(dashboardData.profile); }
+    catch { return ""; }
   }, [dashboardData]);
 
-  /**
-   * Called by LoginPage on form submit. Throws on invalid credentials so the
-   * form can display the error message inline.
-   */
+  // Build the AppContext value once session + dashboardData are available.
+  const appContextValue = useMemo((): AppContextValue | null => {
+    if (!session || !dashboardData) return null;
+    if (isDemo) {
+      return {
+        userId: session.userId,
+        progressStore: createMockProgressStore(),
+        profileRepo: createMockProfileRepository(dashboardData.profile),
+        achievementRepo: createMockAchievementRepository(dashboardData.achievements),
+        inventoryRepo: createMockInventoryRepository(dashboardData.storeItems),
+        goalRepo: createMockDailyGoalRepository(dashboardData.dailyGoals),
+        statsRepo: createMockStatsRepository(),
+      };
+    }
+    return {
+      userId: session.userId,
+      progressStore: supabaseProgressStore,
+      profileRepo: createSupabaseProfileRepository(),
+      achievementRepo: createSupabaseAchievementRepository(),
+      inventoryRepo: createSupabaseInventoryRepository(),
+      goalRepo: createSupabaseDailyGoalRepository(),
+      statsRepo: createSupabaseStatsRepository(),
+    };
+  }, [session, dashboardData, isDemo]);
+
   async function signIn(email: string, password: string): Promise<void> {
-    const nextSession = localAuthRepository.signIn(email, password);
-    setDataError(null); // Clear any stale error from a previous session.
-    setSession(nextSession);
+    setDataError(null);
+    if (isDemo) {
+      const local = localAuthRepository.signIn(email, password);
+      setSession({ userId: local.userId, email });
+    } else {
+      const s = await supabaseAuthRepo.signIn(email, password);
+      setSession(s);
+    }
     navigate("/dashboard");
   }
 
   function signOut(): void {
-    localAuthRepository.signOut();
+    if (isDemo) localAuthRepository.signOut();
+    else supabaseAuthRepo.signOut();
     setSession(null);
     setDataError(null);
     navigate("/login");
   }
 
-  // Unauthenticated: always show login regardless of attempted route.
+  // Show nothing while Supabase auth initialises (avoids redirect flash).
+  if (!authReady) return null;
+
   if (!session || currentRoute.path === "/login") {
     return <LoginPage config={appConfig} onSignIn={signIn} />;
   }
 
-  // Session exists but data failed to load — show a recoverable error state.
   if (dataError) {
     return (
       <section style={{ display: "grid", placeItems: "center", minHeight: "100dvh", padding: "2rem", textAlign: "center" }}>
@@ -113,22 +171,18 @@ export function App() {
     );
   }
 
-  // Session exists but useMemo hasn't resolved yet (shouldn't happen synchronously,
-  // but guard defensively).
-  if (!dashboardData) {
+  if (!dashboardData || !appContextValue) {
     return <LoginPage config={appConfig} onSignIn={signIn} />;
   }
 
-  // Study sessions hide the nav bar for focus
   const hideNav = currentRoute.path === "/lessons/:lessonId/study";
 
-  // Route → component mapping — dashboardData is guaranteed non-null here (guarded above)
   function renderPage() {
     const data = dashboardData!;
     const { path, params } = currentRoute;
-    const lessonId       = params.lessonId ?? "";
-    const achievementId  = params.achievementId ?? "";
-    const itemId         = params.itemId ?? "";
+    const lessonId      = params.lessonId ?? "";
+    const achievementId = params.achievementId ?? "";
+    const itemId        = params.itemId ?? "";
 
     switch (path) {
       case "/dashboard":
@@ -164,11 +218,13 @@ export function App() {
   }
 
   return (
-    <ToastProvider>
-      <div key={currentRoute.path} className="page-enter">
-        {renderPage()}
-      </div>
-      {!hideNav && <NavBar currentPath={currentRoute.path} />}
-    </ToastProvider>
+    <AppContext.Provider value={appContextValue}>
+      <ToastProvider>
+        <div key={currentRoute.path} className="page-enter">
+          {renderPage()}
+        </div>
+        {!hideNav && <NavBar currentPath={currentRoute.path} />}
+      </ToastProvider>
+    </AppContext.Provider>
   );
 }

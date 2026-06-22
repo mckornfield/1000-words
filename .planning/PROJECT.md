@@ -68,6 +68,7 @@ The progression loop must close: studying earns XP → XP drives level → level
 - **Scope**: Small initial curated set of achievements and shop items — design for extensibility, not completeness
 - **Tokens**: New in-game currency (not real money); atomic writes via SQL function pattern
 - **RLS**: Every new Supabase table must have `auth.uid() = user_id` RLS policies
+- **Mobile-first**: App runs in a Capacitor shell on iOS/Android — all UI must be touch-friendly, no hover-only interactions, tap targets ≥ 44px, bottom-nav-friendly layout
 
 ## Key Decisions
 
