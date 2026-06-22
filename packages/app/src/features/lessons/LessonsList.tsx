@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { CSSProperties } from "react";
 import { navigate } from "../../lib/router";
 import type { DashboardData, Lesson } from "../../data/account/repository";
 

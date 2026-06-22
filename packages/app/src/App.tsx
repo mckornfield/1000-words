@@ -124,7 +124,6 @@ export function App() {
 
   // Route → component mapping — dashboardData is guaranteed non-null here (guarded above)
   function renderPage() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const data = dashboardData!;
     const { path, params } = currentRoute;
     const lessonId       = params.lessonId ?? "";

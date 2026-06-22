@@ -67,6 +67,7 @@ try {
     `[AccountRepository] demo-account-data.json failed schema validation.\n` +
     `This usually means the fixture is missing a required field or uses the wrong format.\n` +
     `Validation error:\n${detail}`,
+    { cause: err },
   );
 }
 

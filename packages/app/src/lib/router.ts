@@ -206,7 +206,7 @@ export function getParentRoute(currentRoute: RoutePath): RoutePath | null {
  */
 export function getRouteBreadcrumbLabel(
   route: RoutePath,
-  params: RouteParams = {},
+  _params: RouteParams = {},
   _extraContext?: { lessonTitle?: string; achievementTitle?: string; itemName?: string }
 ): string {
   switch (route) {
