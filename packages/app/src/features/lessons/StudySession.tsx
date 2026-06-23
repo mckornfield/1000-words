@@ -4,6 +4,7 @@ import type { DashboardData } from "../../data/account/repository";
 import { loadWordsForLessonId, type WordEntry } from "../../lib/wordData";
 import { useToast } from "../shared/Toast";
 import { Breadcrumb } from "../shared/Breadcrumb";
+import { FallbackGlyph } from "../shared/FallbackGlyph";
 import { useAppContext } from "../../data/AppContext";
 import { buildSession, scheduleReview, initialState } from "@1000words/engine";
 import type { Card } from "@1000words/content";
@@ -31,12 +32,16 @@ function SessionComplete({
   results,
   lessonTitle,
   xpReward,
+  equippedBorder,
+  equippedBadge,
   onRestart,
   onBack,
 }: {
   results: SessionResult[];
   lessonTitle: string;
   xpReward: number;
+  equippedBorder?: { emoji: string; emojiFallback: string; name: string } | null;
+  equippedBadge?:  { emoji: string; emojiFallback: string; name: string } | null;
   onRestart: () => void;
   onBack: () => void;
 }) {
@@ -72,6 +77,22 @@ function SessionComplete({
           <div className="session-stat-label">XP Earned</div>
         </div>
       </div>
+      {(equippedBorder || equippedBadge) && (
+        <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap", marginBottom: "0.5rem" }}>
+          {equippedBorder && (
+            <span style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.8rem", color: "var(--text-secondary)", background: "var(--surface)", padding: "0.3rem 0.7rem", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>
+              <FallbackGlyph primary={equippedBorder.emoji} fallback={equippedBorder.emojiFallback} />
+              {equippedBorder.name}
+            </span>
+          )}
+          {equippedBadge && (
+            <span style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.8rem", color: "var(--text-secondary)", background: "var(--surface)", padding: "0.3rem 0.7rem", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)" }}>
+              <FallbackGlyph primary={equippedBadge.emoji} fallback={equippedBadge.emojiFallback} />
+              {equippedBadge.name}
+            </span>
+          )}
+        </div>
+      )}
       <div style={{ width: "min(480px, 100%)", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
         <div style={{ padding: "0.75rem 1rem", borderBottom: "1px solid var(--border)", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-secondary)" }}>
           Breakdown
@@ -108,6 +129,8 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
   const lesson = dashboardData.lessons.find((l) => l.lessonId === lessonId);
   const { showXp, showSuccess } = useToast();
   const { userId, progressStore, profileRepo, achievementRepo, goalRepo } = useAppContext();
+  const equippedBorder = dashboardData.storeItems.find((i) => i.category === "profile_border" && i.isEquipped);
+  const equippedBadge  = dashboardData.storeItems.find((i) => i.category === "profile_accent"  && i.isEquipped);
 
   const [cards, setCards]           = useState<SessionCard[]>([]);
   const [cardIndex, setCardIndex]   = useState(0);
@@ -281,6 +304,8 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
         results={results}
         lessonTitle={lesson.title}
         xpReward={lesson.xpReward}
+        equippedBorder={equippedBorder}
+        equippedBadge={equippedBadge}
         onRestart={handleRestart}
         onBack={() => navigate("/lessons/:lessonId", { lessonId })}
       />

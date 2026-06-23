@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
 import { Breadcrumb } from "../shared/Breadcrumb";
 import type { DashboardData } from "../../data/account/repository";
 import { useToast } from "../shared/Toast";
 import { useAppContext } from "../../data/AppContext";
-import type { EquipSlot } from "../../data/types";
+import type { EquipSlot, UserAchievement } from "../../data/types";
 
 interface ItemDetailProps {
   dashboardData: DashboardData;
@@ -15,14 +15,26 @@ interface ItemDetailProps {
 export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
   const item = dashboardData.storeItems.find((i) => i.storeItemId === itemId);
   const { showSuccess, showError } = useToast();
-  const { inventoryRepo, profileRepo, userId } = useAppContext();
+  const { inventoryRepo, profileRepo, achievementRepo, userId } = useAppContext();
 
-  const [isOwned, setIsOwned]     = useState(item?.isOwned ?? false);
-  const [isEquipped, setIsEquipped] = useState(item?.isEquipped ?? false);
-  const [userXP, setUserXP]       = useState(dashboardData.profile.xp);
-  const [busy, setBusy]           = useState(false);
+  const [isOwned, setIsOwned]         = useState(item?.isOwned ?? false);
+  const [isEquipped, setIsEquipped]   = useState(item?.isEquipped ?? false);
+  const [userTokens, setUserTokens]   = useState(dashboardData.profile.tokens);
+  const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
+  const [busy, setBusy]               = useState(false);
 
-  const canAfford = userXP >= (item?.priceXp ?? 0);
+  useEffect(() => {
+    achievementRepo.getUserAchievements(userId).then(setUserAchievements).catch(console.error);
+  }, [userId, achievementRepo]);
+
+  const earnedIds = new Set(userAchievements.map((a) => a.achievementId));
+  const requiredAchId = item?.achievementIdRequired ?? null;
+  const isAchLocked = requiredAchId !== null && !earnedIds.has(requiredAchId);
+  const requiredAch = requiredAchId
+    ? dashboardData.achievements.find((a) => a.achievementId === requiredAchId)
+    : null;
+
+  const canAfford = userTokens >= (item?.tokenCost ?? 0);
 
   if (!item) {
     return (
@@ -44,17 +56,22 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
   };
 
   const handlePurchase = async () => {
-    if (busy || !canAfford) return;
+    if (busy || !canAfford || isAchLocked) return;
     setBusy(true);
     try {
-      await inventoryRepo.purchase(userId, item.storeItemId, item.priceXp);
-      await profileRepo.addXp(userId, -item.priceXp);
+      await profileRepo.spendTokens(userId, item.tokenCost);
+      await inventoryRepo.purchase(userId, item.storeItemId, 0);
       setIsOwned(true);
-      setUserXP((prev) => prev - item.priceXp);
-      showSuccess(`Purchased ${item.name}!`, `${item.priceXp} XP deducted from your balance.`);
+      setUserTokens((prev) => prev - item.tokenCost);
+      showSuccess(`Purchased ${item.name}!`, `${item.tokenCost} 🪙 deducted from your balance.`);
     } catch (err) {
-      console.error("[ItemDetail] Purchase failed:", err);
-      showError("Purchase failed", "Could not complete the purchase. Please try again.");
+      const msg = err instanceof Error ? err.message : "";
+      if (msg === "insufficient_tokens") {
+        showError("Insufficient tokens", "You don't have enough tokens for this item.");
+      } else {
+        console.error("[ItemDetail] Purchase failed:", err);
+        showError("Purchase failed", "Could not complete the purchase. Please try again.");
+      }
     } finally {
       setBusy(false);
     }
@@ -118,16 +135,31 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                 <div>
                   <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>PRICE</div>
-                  <div style={{ fontSize: "1.8rem", fontWeight: 700, color: "var(--accent)" }}>{item.priceXp}</div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>XP</div>
+                  <div style={{ fontSize: "1.8rem", fontWeight: 700, color: "var(--accent)" }}>{item.tokenCost}</div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>🪙 Tokens</div>
                 </div>
                 <div>
                   <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>YOUR BALANCE</div>
-                  <div style={{ fontSize: "1.8rem", fontWeight: 700, color: canAfford ? "var(--status-ok)" : "var(--status-warn)" }}>{userXP}</div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>XP</div>
+                  <div style={{ fontSize: "1.8rem", fontWeight: 700, color: canAfford ? "var(--status-ok)" : "var(--status-warn)" }}>{userTokens}</div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>🪙 Tokens</div>
                 </div>
               </div>
             </div>
+
+            {/* Achievement lock gate */}
+            {isAchLocked && requiredAch && (
+              <div className="bento-cell" style={{ marginBottom: "1rem", background: "var(--status-muted-bg)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <div style={{ fontSize: "2rem" }}>🔒</div>
+                  <div>
+                    <div style={{ fontWeight: 700 }}>Achievement Required</div>
+                    <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                      Earn <strong>{requiredAch.title}</strong> to unlock this item.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Status & Actions */}
             {isOwned ? (
@@ -151,14 +183,14 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
                   </button>
                 )}
               </div>
-            ) : canAfford ? (
+            ) : isAchLocked ? null : canAfford ? (
               <div className="bento-cell" style={{ marginBottom: "1rem" }}>
                 <button
                   onClick={handlePurchase}
                   disabled={busy}
                   style={{ width: "100%", padding: "1rem", borderRadius: "var(--radius)", background: "var(--accent)", color: "#fff", border: "none", cursor: busy ? "not-allowed" : "pointer", fontWeight: 700, fontSize: "1rem", opacity: busy ? 0.7 : 1 }}
                 >
-                  {busy ? "Purchasing…" : `Purchase for ${item.priceXp} XP`}
+                  {busy ? "Purchasing…" : `Purchase for ${item.tokenCost} 🪙`}
                 </button>
               </div>
             ) : (
@@ -166,9 +198,9 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
                 <div style={{ display: "flex", alignItems: "center", gap: "1rem", color: "var(--status-warn)" }}>
                   <div style={{ fontSize: "2rem" }}>⏳</div>
                   <div>
-                    <div style={{ fontWeight: 700 }}>Insufficient Balance</div>
+                    <div style={{ fontWeight: 700 }}>Insufficient Tokens</div>
                     <div style={{ fontSize: "0.85rem" }}>
-                      You need {item.priceXp - userXP} more XP to purchase this item.
+                      You need {item.tokenCost - userTokens} more 🪙 to purchase this item.
                     </div>
                   </div>
                 </div>
@@ -192,13 +224,26 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
                   <dd style={{ margin: 0 }}>
                     {isOwned ? (
                       <span style={{ color: "var(--status-ok)" }}>✓ Owned</span>
+                    ) : isAchLocked ? (
+                      <span style={{ color: "var(--muted)" }}>🔒 Achievement locked</span>
                     ) : canAfford ? (
                       <span style={{ color: "var(--accent)" }}>Available</span>
                     ) : (
-                      <span style={{ color: "var(--status-warn)" }}>Locked</span>
+                      <span style={{ color: "var(--status-warn)" }}>Need more tokens</span>
                     )}
                   </dd>
                 </div>
+                {requiredAch && (
+                  <div style={{ display: "grid", gridTemplateColumns: "120px 1fr" }}>
+                    <dt style={{ fontWeight: 700, color: "var(--text-secondary)" }}>Requires:</dt>
+                    <dd style={{ margin: 0, fontSize: "0.85rem" }}>
+                      {earnedIds.has(requiredAch.achievementId)
+                        ? <span style={{ color: "var(--status-ok)" }}>✓ {requiredAch.title}</span>
+                        : <span style={{ color: "var(--muted)" }}>{requiredAch.title}</span>
+                      }
+                    </dd>
+                  </div>
+                )}
               </dl>
             </div>
           </div>

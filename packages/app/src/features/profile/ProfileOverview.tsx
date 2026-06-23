@@ -1,4 +1,5 @@
 import { navigate } from "../../lib/router";
+import { FallbackGlyph } from "../shared/FallbackGlyph";
 import type { DashboardData } from "../../data/account/repository";
 
 interface ProfileOverviewProps {
@@ -7,7 +8,10 @@ interface ProfileOverviewProps {
 }
 
 export function ProfileOverview({ dashboardData, avatarSrc }: ProfileOverviewProps) {
-  const { profile } = dashboardData;
+  const { profile, storeItems } = dashboardData;
+  const equippedBorder  = storeItems.find((i) => i.category === "profile_border"  && i.isEquipped);
+  const equippedBadge   = storeItems.find((i) => i.category === "profile_accent"  && i.isEquipped);
+  const equippedAvatar  = storeItems.find((i) => i.category === "profile_picture" && i.isEquipped);
 
   return (
     <section className="screen profile-screen swiss page-enter">
@@ -21,11 +25,28 @@ export function ProfileOverview({ dashboardData, avatarSrc }: ProfileOverviewPro
         {/* Profile Hero */}
         <div className="bento-cell" style={{ marginBottom: "1.5rem" }}>
           <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: "2rem", alignItems: "center" }}>
-            <img
-              src={avatarSrc}
-              alt={profile.displayName}
-              style={{ width: "120px", height: "120px", borderRadius: "var(--radius-lg)", border: "3px solid var(--accent)" }}
-            />
+            <div style={{ position: "relative", width: "120px", height: "120px" }}>
+              <img
+                src={avatarSrc}
+                alt={profile.displayName}
+                style={{
+                  width: "120px",
+                  height: "120px",
+                  borderRadius: "var(--radius-lg)",
+                  border: equippedBorder ? "4px solid var(--accent)" : "3px solid var(--border)",
+                }}
+              />
+              {equippedBorder && (
+                <div style={{ position: "absolute", bottom: "-8px", right: "-8px", fontSize: "1.4rem", lineHeight: 1 }}>
+                  <FallbackGlyph primary={equippedBorder.emoji} fallback={equippedBorder.emojiFallback} />
+                </div>
+              )}
+              {equippedAvatar && (
+                <div style={{ position: "absolute", top: "-8px", left: "-8px", fontSize: "1rem", background: "var(--surface)", borderRadius: "50%", padding: "2px", border: "1px solid var(--border)" }}>
+                  <FallbackGlyph primary={equippedAvatar.emoji} fallback={equippedAvatar.emojiFallback} />
+                </div>
+              )}
+            </div>
             <div>
               <h1 style={{ margin: "0 0 0.5rem 0" }}>{profile.displayName}</h1>
               <p style={{ margin: "0 0 1rem 0", color: "var(--text-secondary)" }}>
@@ -102,7 +123,7 @@ export function ProfileOverview({ dashboardData, avatarSrc }: ProfileOverviewPro
         {/* Learning Stats */}
         <div className="bento-cell" style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ marginTop: 0 }}>Learning Progress</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "1rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: "1rem" }}>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: "1.8rem", fontWeight: 700, color: "var(--accent)" }}>
                 {profile.profileLevel}
@@ -116,12 +137,34 @@ export function ProfileOverview({ dashboardData, avatarSrc }: ProfileOverviewPro
               <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>Total XP</div>
             </div>
             <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "1.8rem", fontWeight: 700, color: "#f59e0b" }}>
+                {profile.tokens.toLocaleString()}
+              </div>
+              <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>🪙 Tokens</div>
+            </div>
+            <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: "1.8rem", fontWeight: 700, color: "var(--accent)" }}>
                 {profile.streakDays}
               </div>
               <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>Day Streak</div>
             </div>
           </div>
+          {(equippedBorder || equippedBadge) && (
+            <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--border-subtle)", display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+              {equippedBorder && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                  <FallbackGlyph primary={equippedBorder.emoji} fallback={equippedBorder.emojiFallback} />
+                  <span>{equippedBorder.name}</span>
+                </div>
+              )}
+              {equippedBadge && (
+                <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                  <FallbackGlyph primary={equippedBadge.emoji} fallback={equippedBadge.emojiFallback} />
+                  <span>{equippedBadge.name}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Account Info */}
