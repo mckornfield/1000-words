@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
 import { Breadcrumb } from "../shared/Breadcrumb";
 import type { DashboardData } from "../../data/account/repository";
+import { useAppContext } from "../../data/AppContext";
+import type { UserAchievement } from "../../data/types";
 
 interface AchievementDetailProps {
   dashboardData: DashboardData;
@@ -9,6 +12,13 @@ interface AchievementDetailProps {
 }
 
 export function AchievementDetail({ dashboardData, achievementId }: AchievementDetailProps) {
+  const { userId, achievementRepo } = useAppContext();
+  const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
+
+  useEffect(() => {
+    achievementRepo.getUserAchievements(userId).then(setUserAchievements).catch(console.error);
+  }, [userId, achievementRepo]);
+
   const achievement = dashboardData.achievements.find((a) => a.achievementId === achievementId);
 
   if (!achievement) {
@@ -24,6 +34,24 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
     );
   }
 
+  const earnedIds = new Set(userAchievements.map((a) => a.achievementId));
+  const isEarned = earnedIds.has(achievementId);
+  const prereq = achievement.prerequisiteId
+    ? dashboardData.achievements.find((a) => a.achievementId === achievement.prerequisiteId)
+    : null;
+  const prereqEarned = prereq ? earnedIds.has(prereq.achievementId) : true;
+  const isLockedByPrereq = !isEarned && !prereqEarned;
+
+  const liveStatus: "completed" | "in_progress" | "locked" = isEarned
+    ? "completed"
+    : isLockedByPrereq
+      ? "locked"
+      : achievement.status === "completed"
+        ? "in_progress"
+        : achievement.status;
+
+  const earnedAt = userAchievements.find((a) => a.achievementId === achievementId)?.earnedAt ?? null;
+
   const rarityColors: Record<string, string> = {
     common: "#78746e",
     rare: "#3498db",
@@ -31,9 +59,8 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
     legendary: "#f39c12",
   };
 
-  // Mock related achievements
   const relatedAchievements = dashboardData.achievements.filter(
-    (a) => a.rarity === achievement.rarity && a.achievementId !== achievementId
+    (a) => a.rarity === achievement.rarity && a.achievementId !== achievementId,
   );
 
   return (
@@ -49,10 +76,11 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
             background: `linear-gradient(135deg, ${rarityColors[achievement.rarity]}, rgba(0, 0, 0, 0.1))`,
             textAlign: "center",
             padding: "2rem",
+            filter: isLockedByPrereq ? "grayscale(0.7)" : "none",
           }}
         >
           <div style={{ fontSize: "5rem", marginBottom: "1rem" }}>
-            <FallbackGlyph primary={achievement.icon} fallback={achievement.icon} />
+            <FallbackGlyph primary={achievement.icon} fallback={achievement.iconFallback} />
           </div>
           <h1 style={{ margin: "0 0 0.5rem 0", fontSize: "2rem", color: "#fff" }}>
             {achievement.title}
@@ -88,16 +116,16 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
                   fontSize: "1.2rem",
                   fontWeight: 700,
                   color:
-                    achievement.status === "completed"
+                    liveStatus === "completed"
                       ? "var(--status-ok)"
-                      : achievement.status === "in_progress"
+                      : liveStatus === "in_progress"
                         ? "var(--status-warn)"
                         : "var(--muted)",
                 }}
               >
-                {achievement.status === "completed"
+                {liveStatus === "completed"
                   ? "✓ Unlocked"
-                  : achievement.status === "in_progress"
+                  : liveStatus === "in_progress"
                     ? "◐ In Progress"
                     : "🔒 Locked"}
               </div>
@@ -114,8 +142,33 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
           </div>
         </div>
 
-        {/* Timeline */}
-        {achievement.completedAt && (
+        {/* Prerequisite notice */}
+        {prereq && (
+          <div
+            className="bento-cell"
+            style={{
+              marginBottom: "1.5rem",
+              background: prereqEarned ? "var(--status-ok-bg)" : "var(--status-muted-bg)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <div style={{ fontSize: "1.5rem" }}>{prereqEarned ? "✓" : "🔒"}</div>
+              <div>
+                <div style={{ fontWeight: 700, color: prereqEarned ? "var(--status-ok)" : "var(--text-secondary)" }}>
+                  {prereqEarned ? "Prerequisite met" : "Prerequisite required"}
+                </div>
+                <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                  {prereqEarned
+                    ? `${prereq.title} — already unlocked`
+                    : `Earn "${prereq.title}" first to unlock this achievement`}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Unlocked at */}
+        {earnedAt && (
           <div className="bento-cell" style={{ marginBottom: "1.5rem" }}>
             <h2 style={{ marginTop: 0 }}>Unlocked</h2>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -123,14 +176,14 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
               <div>
                 <div style={{ fontWeight: 700 }}>Achievement Unlocked!</div>
                 <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-                  Earned on {new Date(achievement.completedAt).toLocaleDateString()}
+                  Earned on {new Date(earnedAt).toLocaleDateString()}
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {achievement.status === "in_progress" && (
+        {liveStatus === "in_progress" && (
           <div className="bento-cell" style={{ marginBottom: "1.5rem", background: "var(--status-warn-bg)" }}>
             <h2 style={{ marginTop: 0 }}>In Progress</h2>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -145,7 +198,7 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
           </div>
         )}
 
-        {achievement.status === "locked" && (
+        {liveStatus === "locked" && !isLockedByPrereq && (
           <div className="bento-cell" style={{ marginBottom: "1.5rem", background: "var(--status-muted-bg)" }}>
             <h2 style={{ marginTop: 0 }}>Locked</h2>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -153,7 +206,7 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
               <div>
                 <div style={{ fontWeight: 700 }}>Complete the requirements to unlock</div>
                 <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
-                  This achievement is locked. Complete lessons and objectives to unlock it.
+                  Complete lessons and objectives to unlock this achievement.
                 </div>
               </div>
             </div>
@@ -168,7 +221,9 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
               {relatedAchievements.slice(0, 3).map((related) => (
                 <div
                   key={related.achievementId}
-                  onClick={() => navigate("/achievements/:achievementId", { achievementId: related.achievementId })}
+                  onClick={() =>
+                    navigate("/achievements/:achievementId", { achievementId: related.achievementId })
+                  }
                   style={{
                     padding: "1rem",
                     border: "1px solid var(--border)",
@@ -185,18 +240,18 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
                   }}
                 >
                   <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>
-                    <FallbackGlyph primary={related.icon} fallback={related.icon} />
+                    <FallbackGlyph primary={related.icon} fallback={related.iconFallback} />
                   </div>
-                  <div style={{ fontSize: "0.9rem", fontWeight: 600 }}>
-                    {related.title}
-                  </div>
+                  <div style={{ fontSize: "0.9rem", fontWeight: 600 }}>{related.title}</div>
+                  {earnedIds.has(related.achievementId) && (
+                    <div style={{ fontSize: "0.7rem", color: "var(--status-ok)", marginTop: "0.25rem" }}>✓ Unlocked</div>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Back Button */}
         <button
           onClick={() => navigate("/achievements")}
           style={{
@@ -216,4 +271,3 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
     </section>
   );
 }
-

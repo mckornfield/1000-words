@@ -32,6 +32,7 @@ export interface AppProfile {
   displayName: string;
   bio: string;
   xp: number;
+  tokens: number;
   streakCount: number;
   lastActiveDate: string | null;
   settings: UserSettings;
@@ -44,6 +45,8 @@ export interface ProfileRepository {
     patch: Partial<Pick<AppProfile, "displayName" | "bio" | "settings">>,
   ): Promise<void>;
   addXp(userId: string, delta: number): Promise<void>;
+  addTokens(userId: string, delta: number): Promise<void>;
+  spendTokens(userId: string, amount: number): Promise<void>;
   touchStreak(userId: string, date: string): Promise<void>;
 }
 

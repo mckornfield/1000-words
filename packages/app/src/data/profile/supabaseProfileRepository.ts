@@ -35,7 +35,7 @@ export function createSupabaseProfileRepository(): ProfileRepository {
     async getProfile(userId) {
       const { data, error } = await supabase
         .from("profiles")
-        .select("user_id, display_name, settings, streak_count, xp, last_active_date")
+        .select("user_id, display_name, settings, streak_count, xp, tokens, last_active_date")
         .eq("user_id", userId)
         .single();
       if (error) throw error;
@@ -44,6 +44,7 @@ export function createSupabaseProfileRepository(): ProfileRepository {
         displayName: (data.display_name as string | null) ?? "",
         bio: "",
         xp: (data.xp as number) ?? 0,
+        tokens: (data.tokens as number) ?? 0,
         streakCount: (data.streak_count as number) ?? 0,
         lastActiveDate: (data.last_active_date as string | null) ?? null,
         settings: parseSettings(data.settings),
@@ -64,6 +65,16 @@ export function createSupabaseProfileRepository(): ProfileRepository {
 
     async addXp(userId, delta) {
       const { error } = await supabase.rpc("increment_xp", { uid: userId, delta });
+      if (error) throw error;
+    },
+
+    async addTokens(userId, amount) {
+      const { error } = await supabase.rpc("add_tokens", { uid: userId, amount });
+      if (error) throw error;
+    },
+
+    async spendTokens(userId, amount) {
+      const { error } = await supabase.rpc("spend_tokens", { uid: userId, amount });
       if (error) throw error;
     },
 

@@ -8,6 +8,7 @@ import { useAppContext } from "../../data/AppContext";
 import { buildSession, scheduleReview, initialState } from "@1000words/engine";
 import type { Card } from "@1000words/content";
 import type { Rating } from "@1000words/engine";
+import { checkAchievements } from "../../lib/achievementEngine";
 
 interface StudySessionProps {
   dashboardData: DashboardData;
@@ -106,7 +107,7 @@ function SessionComplete({
 export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
   const lesson = dashboardData.lessons.find((l) => l.lessonId === lessonId);
   const { showXp, showSuccess } = useToast();
-  const { userId, progressStore, profileRepo, goalRepo } = useAppContext();
+  const { userId, progressStore, profileRepo, achievementRepo, goalRepo } = useAppContext();
 
   const [cards, setCards]           = useState<SessionCard[]>([]);
   const [cardIndex, setCardIndex]   = useState(0);
@@ -191,6 +192,40 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
         profileRepo.addXp(userId, earnedXp).catch(console.error);
       }
       goalRepo.incrementGoal(userId, "cards_reviewed", newResults.length).catch(console.error);
+
+      // Achievement unlock check at session end.
+      (async () => {
+        try {
+          const [userAchievements, profile] = await Promise.all([
+            achievementRepo.getUserAchievements(userId),
+            profileRepo.getProfile(userId),
+          ]);
+          const earned = new Set(userAchievements.map((a) => a.achievementId));
+          const lessonsCompleted = dashboardData.lessons.filter(
+            (l) => l.status === "completed",
+          ).length;
+          const newlyUnlocked = checkAchievements(
+            dashboardData.achievements,
+            earned,
+            {
+              cardsReviewed: newResults.length,
+              accuracy,
+              xpEarned: earnedXp,
+              hour: new Date().getHours(),
+              streakCount: profile.streakCount,
+              totalCardsReviewedAllTime: newResults.length,
+              lessonsCompleted,
+            },
+          );
+          for (const achId of newlyUnlocked) {
+            await achievementRepo.unlock(userId, achId);
+            const ach = dashboardData.achievements.find((a) => a.achievementId === achId);
+            if (ach) showSuccess(`Achievement unlocked: ${ach.title}`, ach.description);
+          }
+        } catch (err) {
+          console.error("[StudySession] Achievement check failed:", err);
+        }
+      })();
 
       showXp(earnedXp, `${lesson?.title ?? "Lesson"} complete`);
       if (accuracy === 100) showSuccess("Perfect score!", "You aced every card 🎉");

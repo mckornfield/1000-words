@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "users": [
     {
       "userId": "Usr-001",
@@ -21,6 +21,7 @@
       "profileBannerId": "Ban-001",
       "profileLevel": 12,
       "xp": 2840,
+      "tokens": 500,
       "xpToNextLevel": 3200,
       "streakDays": 9,
       "joinedDate": "2026-05-15",
@@ -185,10 +186,12 @@
       "description": "Complete your very first lesson and begin your journey.",
       "xpReward": 100,
       "rarity": "common",
-      "icon": "\ud83c\udf1f",
+      "icon": "🌟",
       "iconFallback": "[*]",
       "status": "completed",
-      "completedAt": "2026-05-15"
+      "completedAt": "2026-05-15",
+      "prerequisiteId": null,
+      "criteria": { "type": "lessons_completed", "target": 1 }
     },
     {
       "achievementId": "Ach-002",
@@ -196,10 +199,12 @@
       "description": "Maintain a 7-day learning streak without missing a day.",
       "xpReward": 280,
       "rarity": "rare",
-      "icon": "\ud83d\udd25",
+      "icon": "🔥",
       "iconFallback": "[FIRE]",
       "status": "completed",
-      "completedAt": "2026-06-08"
+      "completedAt": "2026-06-08",
+      "prerequisiteId": null,
+      "criteria": { "type": "streak_days", "target": 7 }
     },
     {
       "achievementId": "Ach-003",
@@ -207,10 +212,12 @@
       "description": "Earn 500 XP in a single day through focused study sessions.",
       "xpReward": 400,
       "rarity": "epic",
-      "icon": "\u26a1",
+      "icon": "⚡",
       "iconFallback": "[BOLT]",
       "status": "in_progress",
-      "completedAt": null
+      "completedAt": null,
+      "prerequisiteId": null,
+      "criteria": { "type": "xp_total", "target": 500 }
     },
     {
       "achievementId": "Ach-004",
@@ -218,10 +225,12 @@
       "description": "Successfully learn and review 100 unique vocabulary words.",
       "xpReward": 350,
       "rarity": "rare",
-      "icon": "\ud83d\udcd6",
+      "icon": "📖",
       "iconFallback": "[BOOK]",
       "status": "in_progress",
-      "completedAt": null
+      "completedAt": null,
+      "prerequisiteId": null,
+      "criteria": { "type": "cards_reviewed_total", "target": 100 }
     },
     {
       "achievementId": "Ach-005",
@@ -229,21 +238,25 @@
       "description": "Complete every lesson in the Core Greetings track.",
       "xpReward": 600,
       "rarity": "epic",
-      "icon": "\ud83c\udfc6",
+      "icon": "🏆",
       "iconFallback": "[CUP]",
       "status": "in_progress",
-      "completedAt": null
+      "completedAt": null,
+      "prerequisiteId": "Ach-001",
+      "criteria": { "type": "lessons_completed", "target": 5 }
     },
     {
       "achievementId": "Ach-006",
       "title": "Consistency King",
-      "description": "Reach a 30-day streak \u2014 true dedication to your craft.",
+      "description": "Reach a 30-day streak — true dedication to your craft.",
       "xpReward": 1200,
       "rarity": "legendary",
-      "icon": "\ud83d\udc51",
+      "icon": "👑",
       "iconFallback": "[CROWN]",
       "status": "locked",
-      "completedAt": null
+      "completedAt": null,
+      "prerequisiteId": "Ach-002",
+      "criteria": { "type": "streak_days", "target": 30 }
     },
     {
       "achievementId": "Ach-007",
@@ -251,43 +264,51 @@
       "description": "Start lessons across three different learning tracks.",
       "xpReward": 450,
       "rarity": "rare",
-      "icon": "\ud83d\uddfa\ufe0f",
+      "icon": "🗺️",
       "iconFallback": "[MAP]",
       "status": "locked",
-      "completedAt": null
+      "completedAt": null,
+      "prerequisiteId": null,
+      "criteria": { "type": "lessons_completed", "target": 3 }
     },
     {
       "achievementId": "Ach-008",
       "title": "Perfect Score",
-      "description": "Complete a full study session with 100% accuracy \u2014 no misses.",
+      "description": "Complete a full study session with 100% accuracy — no misses.",
       "xpReward": 500,
       "rarity": "epic",
-      "icon": "\ud83d\udc8e",
+      "icon": "💎",
       "iconFallback": "[GEM]",
       "status": "locked",
-      "completedAt": null
+      "completedAt": null,
+      "prerequisiteId": null,
+      "criteria": { "type": "accuracy_perfect", "target": 1 }
     },
     {
       "achievementId": "Ach-009",
       "title": "Night Owl",
-      "description": "Complete a study session after 10 PM \u2014 dedication never sleeps.",
+      "description": "Complete a study session after 10 PM — dedication never sleeps.",
       "xpReward": 200,
       "rarity": "common",
-      "icon": "\ud83e\udd89",
+      "icon": "🦉",
       "iconFallback": "[OWL]",
       "status": "locked",
-      "completedAt": null
+      "completedAt": null,
+      "prerequisiteId": null,
+      "criteria": { "type": "time_of_day", "target": 22 }
     },
     {
       "achievementId": "Ach-010",
       "title": "Early Bird",
-      "description": "Complete a study session before 8 AM \u2014 morning momentum.",
+      "description": "Complete a study session before 8 AM — morning momentum.",
       "xpReward": 200,
       "rarity": "common",
-      "icon": "\ud83c\udf05",
+      "icon": "🌅",
       "iconFallback": "[DAWN]",
       "status": "locked",
-      "completedAt": null
+      "completedAt": null,
+      "prerequisiteId": null,
+      "criteria": { "type": "time_of_day", "target": 8 }
     },
     {
       "achievementId": "Ach-011",
@@ -295,10 +316,12 @@
       "description": "Finish 5 lessons across 2+ different learning tracks.",
       "xpReward": 550,
       "rarity": "epic",
-      "icon": "\ud83c\udf10",
+      "icon": "🌐",
       "iconFallback": "[GLOBE]",
       "status": "locked",
-      "completedAt": null
+      "completedAt": null,
+      "prerequisiteId": "Ach-007",
+      "criteria": { "type": "lessons_completed", "target": 5 }
     },
     {
       "achievementId": "Ach-012",
@@ -306,10 +329,12 @@
       "description": "Review 500 flashcards total across all study sessions.",
       "xpReward": 750,
       "rarity": "legendary",
-      "icon": "\ud83c\udccf",
+      "icon": "🃏",
       "iconFallback": "[CARDS]",
       "status": "locked",
-      "completedAt": null
+      "completedAt": null,
+      "prerequisiteId": null,
+      "criteria": { "type": "cards_reviewed_total", "target": 500 }
     }
   ],
   "storeItems": [
@@ -319,9 +344,10 @@
       "name": "Orbit Runner",
       "description": "Minimal geometric avatar with high contrast styling and sharp lines.",
       "priceXp": 600,
-      "unlockRequirementId": "Req-001",
+      "tokenCost": 120,
+      "achievementIdRequired": null,
       "assetRefId": "Asset-Avatar-001",
-      "emoji": "\ud83e\uddd1\u200d\ud83d\ude80",
+      "emoji": "🧑‍🚀",
       "emojiFallback": "[RUNNER]",
       "isOwned": true,
       "isEquipped": true
@@ -332,9 +358,10 @@
       "name": "Sunset Coder",
       "description": "Warm retro-inspired avatar with golden hour tones.",
       "priceXp": 800,
-      "unlockRequirementId": "Req-004",
+      "tokenCost": 160,
+      "achievementIdRequired": "Ach-002",
       "assetRefId": "Asset-Avatar-002",
-      "emoji": "\ud83e\uddd1\u200d\ud83d\udcbb",
+      "emoji": "🧑‍💻",
       "emojiFallback": "[CODER]",
       "isOwned": false,
       "isEquipped": false
@@ -345,9 +372,10 @@
       "name": "Galaxy Wanderer",
       "description": "Deep space explorer avatar for the dedicated learner.",
       "priceXp": 1200,
-      "unlockRequirementId": "Req-007",
+      "tokenCost": 240,
+      "achievementIdRequired": "Ach-004",
       "assetRefId": "Asset-Avatar-003",
-      "emoji": "\ud83e\uddd9",
+      "emoji": "🧙",
       "emojiFallback": "[WIZARD]",
       "isOwned": false,
       "isEquipped": false
@@ -356,11 +384,12 @@
       "storeItemId": "Border-001",
       "category": "profile_border",
       "name": "Redline Frame",
-      "description": "Swiss-inspired red edge frame \u2014 bold, minimal, unmistakable.",
+      "description": "Swiss-inspired red edge frame — bold, minimal, unmistakable.",
       "priceXp": 450,
-      "unlockRequirementId": "Req-002",
+      "tokenCost": 90,
+      "achievementIdRequired": null,
       "assetRefId": "Asset-Border-001",
-      "emoji": "\ud83d\udd33",
+      "emoji": "🔳",
       "emojiFallback": "[#]",
       "isOwned": true,
       "isEquipped": true
@@ -371,9 +400,10 @@
       "name": "Neon Edge",
       "description": "Electric blue neon glow border for a futuristic look.",
       "priceXp": 550,
-      "unlockRequirementId": "Req-005",
+      "tokenCost": 110,
+      "achievementIdRequired": "Ach-003",
       "assetRefId": "Asset-Border-002",
-      "emoji": "\ud83d\udfe6",
+      "emoji": "🟦",
       "emojiFallback": "[NEON]",
       "isOwned": false,
       "isEquipped": false
@@ -382,11 +412,12 @@
       "storeItemId": "Border-003",
       "category": "profile_border",
       "name": "Minimalist Frame",
-      "description": "Clean hairline border \u2014 understated elegance for serious learners.",
+      "description": "Clean hairline border — understated elegance for serious learners.",
       "priceXp": 350,
-      "unlockRequirementId": "Req-006",
+      "tokenCost": 70,
+      "achievementIdRequired": "Ach-001",
       "assetRefId": "Asset-Border-003",
-      "emoji": "\u2b1c",
+      "emoji": "⬜",
       "emojiFallback": "[FRAME]",
       "isOwned": false,
       "isEquipped": false
@@ -397,9 +428,10 @@
       "name": "Lightning Prefix",
       "description": "Adds an electric accent before your display name on profile cards.",
       "priceXp": 300,
-      "unlockRequirementId": "Req-003",
+      "tokenCost": 60,
+      "achievementIdRequired": "Ach-003",
       "assetRefId": "Asset-Accent-001",
-      "emoji": "\u26a1",
+      "emoji": "⚡",
       "emojiFallback": "[!]",
       "isOwned": false,
       "isEquipped": false
@@ -410,9 +442,10 @@
       "name": "Crown Prefix",
       "description": "Mark yourself as royalty with a golden crown before your name.",
       "priceXp": 900,
-      "unlockRequirementId": "Req-008",
+      "tokenCost": 180,
+      "achievementIdRequired": "Ach-006",
       "assetRefId": "Asset-Accent-002",
-      "emoji": "\ud83d\udc51",
+      "emoji": "👑",
       "emojiFallback": "[CROWN]",
       "isOwned": false,
       "isEquipped": false
@@ -423,22 +456,24 @@
       "name": "Solar Flare",
       "description": "Warm amber and orange accent tones for a radiant profile.",
       "priceXp": 700,
-      "unlockRequirementId": "Req-008",
+      "tokenCost": 140,
+      "achievementIdRequired": "Ach-010",
       "assetRefId": "Asset-Accent-003",
-      "emoji": "\u2600\ufe0f",
+      "emoji": "☀️",
       "emojiFallback": "[SUN]",
       "isOwned": false,
       "isEquipped": false
     },
     {
-      "storeItemId": "Border-003",
+      "storeItemId": "Border-004",
       "category": "profile_border",
       "name": "Golden Trim",
       "description": "Legendary-tier golden border for the most dedicated learners.",
       "priceXp": 1500,
-      "unlockRequirementId": "Req-009",
-      "assetRefId": "Asset-Border-003",
-      "emoji": "\ud83c\udfc5",
+      "tokenCost": 300,
+      "achievementIdRequired": "Ach-012",
+      "assetRefId": "Asset-Border-004",
+      "emoji": "🏅",
       "emojiFallback": "[MEDAL]",
       "isOwned": false,
       "isEquipped": false
@@ -491,16 +526,16 @@
       "eventId": "Evt-001",
       "timestamp": "2026-06-10T08:00:00.000Z",
       "title": "Lesson Progress",
-      "detail": "Daily Actions reached 64% completion \u2014 12 new words reviewed.",
-      "icon": "\u2705",
+      "detail": "Daily Actions reached 64% completion — 12 new words reviewed.",
+      "icon": "✅",
       "iconFallback": "[OK]"
     },
     {
       "eventId": "Evt-002",
       "timestamp": "2026-06-10T07:42:00.000Z",
       "title": "Achievement Progress",
-      "detail": "Speed Learner is now at 72% \u2014 keep earning XP today!",
-      "icon": "\ud83c\udfaf",
+      "detail": "Speed Learner is now at 72% — keep earning XP today!",
+      "icon": "🎯",
       "iconFallback": "[AIM]"
     },
     {
@@ -508,15 +543,15 @@
       "timestamp": "2026-06-10T07:20:00.000Z",
       "title": "Store Unlock",
       "detail": "Redline Frame equipped to your profile.",
-      "icon": "\ud83d\uded2",
+      "icon": "🛒",
       "iconFallback": "[STORE]"
     },
     {
       "eventId": "Evt-004",
       "timestamp": "2026-06-09T19:15:00.000Z",
       "title": "Daily Goal Complete",
-      "detail": "Reviewed 30 cards \u2014 Daily Goal completed for +140 XP.",
-      "icon": "\ud83c\udfc5",
+      "detail": "Reviewed 30 cards — Daily Goal completed for +140 XP.",
+      "icon": "🏅",
       "iconFallback": "[MEDAL]"
     },
     {
@@ -524,23 +559,23 @@
       "timestamp": "2026-06-09T14:30:00.000Z",
       "title": "Streak Milestone",
       "detail": "9-day streak reached! Streak Keeper achievement earned.",
-      "icon": "\ud83d\udd25",
+      "icon": "🔥",
       "iconFallback": "[FIRE]"
     },
     {
       "eventId": "Evt-006",
       "timestamp": "2026-06-08T10:00:00.000Z",
       "title": "Achievement Unlocked",
-      "detail": "Streak Keeper earned \u2014 7-day streak milestone hit for +280 XP.",
-      "icon": "\ud83c\udfc6",
+      "detail": "Streak Keeper earned — 7-day streak milestone hit for +280 XP.",
+      "icon": "🏆",
       "iconFallback": "[CUP]"
     },
     {
       "eventId": "Evt-007",
       "timestamp": "2026-06-07T08:45:00.000Z",
       "title": "Lesson Complete",
-      "detail": "Core Greetings fully completed \u2014 100% mastery, +120 XP earned.",
-      "icon": "\ud83c\udf1f",
+      "detail": "Core Greetings fully completed — 100% mastery, +120 XP earned.",
+      "icon": "🌟",
       "iconFallback": "[STAR]"
     },
     {
@@ -548,39 +583,39 @@
       "timestamp": "2026-06-05T16:00:00.000Z",
       "title": "Level Up",
       "detail": "Reached Level 12! New lessons and rewards now available.",
-      "icon": "\u2b06\ufe0f",
+      "icon": "⬆️",
       "iconFallback": "[UP]"
     },
     {
-      "eventId": "Evt-007",
-      "timestamp": "2026-06-10T08:15:00Z",
-      "title": "Session started",
-      "detail": "Began Daily Actions review session",
-      "icon": "\ud83d\udcd6",
+      "eventId": "Evt-009",
+      "timestamp": "2026-06-10T08:15:00.000Z",
+      "title": "Session Started",
+      "detail": "Began Daily Actions review session.",
+      "icon": "📖",
       "iconFallback": "[BOOK]"
     },
     {
-      "eventId": "Evt-008",
-      "timestamp": "2026-06-09T20:30:00Z",
-      "title": "Daily goal reached",
-      "detail": "Completed 15-minute study goal",
-      "icon": "\ud83c\udfaf",
+      "eventId": "Evt-010",
+      "timestamp": "2026-06-09T20:30:00.000Z",
+      "title": "Daily Goal Reached",
+      "detail": "Completed 15-minute study goal.",
+      "icon": "🎯",
       "iconFallback": "[TARGET]"
     },
     {
-      "eventId": "Evt-009",
-      "timestamp": "2026-06-08T18:00:00Z",
-      "title": "Streak milestone",
-      "detail": "9-day streak \u2014 keep going!",
-      "icon": "\ud83d\udd25",
+      "eventId": "Evt-011",
+      "timestamp": "2026-06-08T18:00:00.000Z",
+      "title": "Streak Milestone",
+      "detail": "9-day streak — keep going!",
+      "icon": "🔥",
       "iconFallback": "[FIRE]"
     },
     {
-      "eventId": "Evt-010",
-      "timestamp": "2026-06-07T14:20:00Z",
-      "title": "Words mastered",
-      "detail": "Marked 12 new vocabulary words as mastered",
-      "icon": "\u2705",
+      "eventId": "Evt-012",
+      "timestamp": "2026-06-07T14:20:00.000Z",
+      "title": "Words Mastered",
+      "detail": "Marked 12 new vocabulary words as mastered.",
+      "icon": "✅",
       "iconFallback": "[CHECK]"
     }
   ]
