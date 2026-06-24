@@ -58,6 +58,8 @@ The current user's row uses:
 - No opacity change — user's row must be fully readable
 - Position: inline in rank order if top 50; pinned below separator if outside top 50
 
+**Primary focal point:** The current-user highlighted row (accent border ring via `--accent`) draws the eye first; rank medal emojis (🥇 🥈 🥉) anchor positions 1–3 as secondary focal points.
+
 ### Separator (pinned user outside top 50)
 
 - A `<hr>`-style divider: `border-top: 1px dashed var(--border)` + `margin: 8px 0`
@@ -88,21 +90,24 @@ Use multiples of 4px only. Standard 8-point grid.
 
 All type uses the project's inherited `font-family` (system stack). No custom web fonts.
 
-### Type Scale (4 sizes)
+### Type Scale (4 sizes — maximum)
 
 | Role | Size | Weight | Line-Height | Token equivalent |
 |------|------|--------|-------------|-----------------|
-| Page title ("Leaderboard") | `1rem` / `0.9rem` uppercase | 800 | 1.0 | Matches `.topbar h1` pattern |
-| Rank number | `0.88rem` | 700 | 1.0 | Tabular-nums |
-| Display name | `0.88rem` | 650 | 1.3 | Primary row label |
-| Level / RankValue value | `0.85rem` | 700 | 1.0 | Accent-colored value |
-| Level / RankValue label | `0.67rem` uppercase | 700 | 1.0 | `--muted`, letter-spacing `0.07em` |
-| Dashboard card meta | `0.75rem` | 400 | 1.4 | `.card-meta` pattern |
+| Page title ("Leaderboard") | `1rem` uppercase | 700 | 1.0 | Matches `.topbar h1` pattern |
+| Rank number + Display name | `0.88rem` | 700 | 1.3 | Tabular-nums for rank; primary row label for name |
+| Dashboard card meta + RankValue/Level values | `0.75rem` | 700 | 1.4 | Stacked value columns + `.card-meta` pattern |
+| Level/RankValue labels + separator copy | `0.67rem` uppercase | 400 | 1.0 | `--muted`, letter-spacing `0.07em` |
 
-### Weight Usage (2 weights)
+**Consolidation notes:**
+- The previous `0.85rem` value size for Level/RankValue is dropped; use `0.75rem` for those stacked values.
+- The previous `0.9rem` page-title variant is dropped; use `1rem` only.
+- Weight 650 (semibold) and weight 800 are dropped. Use `700` for all emphasized text.
 
-- **400 (regular):** Meta copy, secondary labels, separator copy
-- **700 (bold) / 650 (semibold):** All interactive labels, names, rank numbers, values
+### Weight Usage (2 weights — maximum)
+
+- **400 (regular):** Labels (`Lv`, `pts`), separator copy (`You`), dashboard card meta, secondary text in `--muted`
+- **700 (bold):** Page title, rank numbers, display names, stacked value columns (Level value, RankValue)
 
 ---
 
@@ -145,9 +150,9 @@ All type uses the project's inherited `font-family` (system stack). No custom we
 | Rank # | 32px, text-align right | `#1`, `#2`, … `#50` | `font-variant-numeric: tabular-nums`; `0.88rem`, weight 700; rank 1–3 prefix with medal emoji: 🥇 🥈 🥉 replacing `#` |
 | Avatar | 40px × 40px | `<img>` or initials circle | `border-radius: 50%` — circular; border: `2px solid var(--border)` default; `2px solid var(--accent)` if equipped border cosmetic |
 | Border overlay | 16px × 16px | `<FallbackGlyph>` emoji | `position: absolute; bottom: -4px; right: -4px; font-size: 0.9rem` — matches ProfileOverview border overlay pattern at smaller scale |
-| Name + Badge | flex: 1, min-width: 0 | Display name (0.88rem, weight 650) + badge emoji | Badge emoji rendered as `<FallbackGlyph>` inline after name, `font-size: 0.9rem`, `margin-left: 4px` |
-| Level | 44px | Numeric value + "Lv" label stacked | Value: `0.85rem`, weight 700, `--accent`; label: `0.67rem`, `--muted`, uppercase |
-| RankValue | 52px | Numeric value + "pts" label stacked | Same stacked pattern as Level column; value: `0.85rem`, weight 700, `--text` |
+| Name + Badge | flex: 1, min-width: 0 | Display name (0.88rem, weight 700) + badge emoji | Badge emoji rendered as `<FallbackGlyph>` inline after name, `font-size: 0.9rem`, `margin-left: 4px` |
+| Level | 44px | Numeric value + "Lv" label stacked | Value: `0.75rem`, weight 700, `--accent`; label: `0.67rem`, weight 400, `--muted`, uppercase |
+| RankValue | 52px | Numeric value + "pts" label stacked | Same stacked pattern as Level column; value: `0.75rem`, weight 700, `--text`; label: `0.67rem`, weight 400 |
 
 **Fallback avatar (no equipped profile_picture):**
 - Colored circle 40px × 40px, `border-radius: 50%`
