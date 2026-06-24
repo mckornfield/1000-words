@@ -11,6 +11,7 @@
 **Goal:** Add a leaderboard page that ranks users by Level × AchievementCount = RankValue, shows equipped cosmetics alongside each entry, and is backed by a Supabase query (with a mock implementation for demo mode).
 
 **Requirements:**
+
 - Leaderboard page accessible from dashboard navigation
 - Ranking formula: `Level × AchievementCount = RankValue` (Level derived from XP)
 - Each row shows: rank position, avatar (equipped profile_picture cosmetic), display name, equipped border/badge cosmetics, Level, Achievement count, RankValue
@@ -23,8 +24,16 @@
 **Plans:** 3 plans
 
 Plans:
+**Wave 1**
+
 - [ ] 07-01-PLAN.md — Data layer: SQL migration (SECURITY DEFINER RPC), LeaderboardEntry types, Supabase + mock repositories
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
 - [ ] 07-02-PLAN.md — Wiring: /leaderboard route in router.ts, repo injection + renderPage case in App.tsx
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
 - [ ] 07-03-PLAN.md — UI: LeaderboardPage component, dashboard card entry point, CSS rule
 
 **Status:** Pending
