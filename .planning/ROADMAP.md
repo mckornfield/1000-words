@@ -20,6 +20,13 @@
 - Current user row highlighted
 - Follows existing `supabase*Repository` + `mock*Repository` pattern in `data/` layer
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Data layer: SQL migration (SECURITY DEFINER RPC), LeaderboardEntry types, Supabase + mock repositories
+- [ ] 07-02-PLAN.md — Wiring: /leaderboard route in router.ts, repo injection + renderPage case in App.tsx
+- [ ] 07-03-PLAN.md — UI: LeaderboardPage component, dashboard card entry point, CSS rule
+
 **Status:** Pending
 
 **Depends on:** Milestone 2 phases 01–06 (achievement engine, token currency — committed)
