@@ -53,7 +53,7 @@ export function LoginPage({ config, onSignIn }: LoginPageProps) {
       <div className="login-card bento-cell">
         <figure className="hero-figure">
           <img
-            src="/placeholder.svg"
+            src="/assets/images/placeholder.svg"
             className="hero-svg"
             alt="Dashboard preview"
             width={640}

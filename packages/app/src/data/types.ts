@@ -32,6 +32,7 @@ export interface AppProfile {
   displayName: string;
   bio: string;
   xp: number;
+  tokens: number;
   streakCount: number;
   lastActiveDate: string | null;
   settings: UserSettings;
@@ -44,6 +45,8 @@ export interface ProfileRepository {
     patch: Partial<Pick<AppProfile, "displayName" | "bio" | "settings">>,
   ): Promise<void>;
   addXp(userId: string, delta: number): Promise<void>;
+  addTokens(userId: string, delta: number): Promise<void>;
+  spendTokens(userId: string, amount: number): Promise<void>;
   touchStreak(userId: string, date: string): Promise<void>;
 }
 
@@ -105,6 +108,27 @@ export interface StatsRepository {
   getWeeklyXp(userId: string, since: string): Promise<DailyXp[]>;
 }
 
+// --- Leaderboard ---
+
+export interface LeaderboardEntry {
+  userId: string;
+  displayName: string;
+  xp: number;
+  level: number;
+  achievementCount: number;
+  rankValue: number;
+  /** 1-based position assigned client-side after fetch (or -1 when rank is unknown) */
+  rank: number;
+  equippedBorderId: string | null;
+  equippedBadgeId: string | null;
+  equippedAvatarId: string | null;
+}
+
+export interface LeaderboardRepository {
+  getTopN(n: number): Promise<LeaderboardEntry[]>;
+  getCurrentUserEntry(userId: string): Promise<LeaderboardEntry | null>;
+}
+
 // ─── App Context ──────────────────────────────────────────────────────────────
 
 export interface AppContextValue {
@@ -115,4 +139,5 @@ export interface AppContextValue {
   inventoryRepo: InventoryRepository;
   goalRepo: DailyGoalRepository;
   statsRepo: StatsRepository;
+  leaderboardRepo: LeaderboardRepository;
 }

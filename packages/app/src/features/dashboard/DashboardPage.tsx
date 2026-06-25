@@ -326,6 +326,33 @@ export function DashboardPage({ dashboardData, avatarSrc, onSignOut }: Dashboard
           </ul>
         </article>
 
+        {/* Leaderboard */}
+        <article className="bento-cell leaderboard-card swiss-rule">
+          <div className="card-header">
+            <h3>Leaderboard</h3>
+            <span className="card-meta">Top 50</span>
+          </div>
+          <div>
+            <button
+              onClick={() => navigate("/leaderboard")}
+              style={{
+                width: "100%",
+                background: "var(--accent)",
+                color: "#fff",
+                border: "none",
+                padding: "10px 0",
+                borderRadius: "var(--radius-sm)",
+                fontSize: "0.88rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                marginTop: 8,
+              }}
+            >
+              View Rankings
+            </button>
+          </div>
+        </article>
+
       </div>
     </section>
   );

@@ -7,6 +7,7 @@ export function createMockProfileRepository(fixture: Profile): ProfileRepository
     displayName: fixture.displayName,
     bio: fixture.bio,
     xp: fixture.xp,
+    tokens: fixture.tokens,
     streakCount: fixture.streakDays,
     lastActiveDate: fixture.lastActiveDate,
     settings: {
@@ -29,6 +30,13 @@ export function createMockProfileRepository(fixture: Profile): ProfileRepository
     },
     async addXp(_userId, delta) {
       current = { ...current, xp: Math.max(0, current.xp + delta) };
+    },
+    async addTokens(_userId, delta) {
+      current = { ...current, tokens: Math.max(0, current.tokens + delta) };
+    },
+    async spendTokens(_userId, amount) {
+      if (current.tokens < amount) throw new Error("insufficient_tokens");
+      current = { ...current, tokens: current.tokens - amount };
     },
     async touchStreak(_userId, _date) {},
   };
