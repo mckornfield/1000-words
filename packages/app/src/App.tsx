@@ -14,6 +14,8 @@ import { createSupabaseDailyGoalRepository } from "./data/goals/supabaseDailyGoa
 import { createMockDailyGoalRepository } from "./data/goals/mockDailyGoalRepository";
 import { createSupabaseStatsRepository } from "./data/stats/supabaseStatsRepository";
 import { createMockStatsRepository } from "./data/stats/mockStatsRepository";
+import { createSupabaseLeaderboardRepository } from "./data/leaderboard/supabaseLeaderboardRepository";
+import { createMockLeaderboardRepository } from "./data/leaderboard/mockLeaderboardRepository";
 import { createProgressStore } from "./data/progress";
 import { createMockProgressStore } from "./data/progressStore.mock";
 import { AppContext } from "./data/AppContext";
@@ -119,6 +121,7 @@ export function App() {
         inventoryRepo: createMockInventoryRepository(dashboardData.storeItems),
         goalRepo: createMockDailyGoalRepository(dashboardData.dailyGoals),
         statsRepo: createMockStatsRepository(),
+        leaderboardRepo: createMockLeaderboardRepository(session.userId),
       };
     }
     return {
@@ -129,6 +132,7 @@ export function App() {
       inventoryRepo: createSupabaseInventoryRepository(),
       goalRepo: createSupabaseDailyGoalRepository(),
       statsRepo: createSupabaseStatsRepository(),
+      leaderboardRepo: createSupabaseLeaderboardRepository(),
     };
   }, [session, dashboardData, isDemo]);
 
