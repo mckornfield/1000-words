@@ -914,7 +914,8 @@ button:disabled {
 	.lessons-card,
 	.achievements-card,
 	.store-card,
-	.timeline-card {
+	.timeline-card,
+	.leaderboard-card {
 		grid-column: 1 / -1;
 	}
 
