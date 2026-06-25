@@ -97,6 +97,8 @@ function LeaderboardRow({ entry, isCurrentUser, storeItems }: LeaderboardRowProp
         </>
       );
     }
+    // -1 is the sentinel used when the user is outside the visible top-N window
+    if (entry.rank === -1) return <span aria-label="Rank outside top 50">—</span>;
     return `#${entry.rank}`;
   };
 
