@@ -6,7 +6,7 @@ function xpToLevel(xp: number): number {
 }
 
 // Build fixture entries pre-sort — ranked by rankValue DESC, then xp DESC.
-// The demo user (currentUserId) is placed at approximately rank 6 in the table.
+// The demo user (currentUserId) is placed at rank 8 in the sorted table.
 function buildFixture(currentUserId: string): LeaderboardEntry[] {
   const raw: Omit<LeaderboardEntry, "rank">[] = [
     // Rank 1 candidate — high achiever
@@ -69,7 +69,7 @@ function buildFixture(currentUserId: string): LeaderboardEntry[] {
       equippedBadgeId: "Accent-003",
       equippedAvatarId: "StoreAvatar-002",
     },
-    // Demo user — xp=2840, level=12, achievementCount=2, rankValue=24 (rank ~6)
+    // Demo user — xp=2840, level=12, achievementCount=2, rankValue=24 (rank 8)
     {
       userId: currentUserId,
       displayName: "Ari Navarro",
