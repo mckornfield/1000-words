@@ -34,6 +34,7 @@ import { StatsPage } from "./features/profile/StatsPage";
 import { CustomizationPage } from "./features/profile/CustomizationPage";
 import { SettingsPage } from "./features/profile/SettingsPage";
 import { ObjectivesHub } from "./features/objectives/ObjectivesHub";
+import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
 import { NavBar } from "./features/shared/NavBar";
 import { ToastProvider } from "./features/shared/Toast";
 import { parseRoute, navigate, requiresAuth, type ParsedRoute } from "./lib/router";
@@ -216,6 +217,8 @@ export function App() {
       case "/objectives":
       case "/objectives/:objectiveId":
         return <ObjectivesHub dashboardData={data} />;
+      case "/leaderboard":
+        return <LeaderboardPage dashboardData={data} />;
       default:
         return <DashboardPage dashboardData={data} avatarSrc={avatarSrc} onSignOut={signOut} />;
     }
