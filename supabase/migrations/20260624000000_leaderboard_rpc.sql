@@ -45,6 +45,7 @@ as $$
   limit least(n, 100)
 $$;
 
+revoke execute on function public.get_leaderboard(integer) from public;
 grant execute on function public.get_leaderboard(integer) to authenticated;
 
 -- ----------------------------------------------------------------------------
@@ -86,4 +87,5 @@ as $$
   group by p.user_id, p.display_name, p.xp
 $$;
 
+revoke execute on function public.get_current_user_rank(uuid) from public;
 grant execute on function public.get_current_user_rank(uuid) to authenticated;
