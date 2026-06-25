@@ -21,7 +21,7 @@
 - Current user row highlighted
 - Follows existing `supabase*Repository` + `mock*Repository` pattern in `data/` layer
 
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -34,7 +34,7 @@ Plans:
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 07-03-PLAN.md — UI: LeaderboardPage component, dashboard card entry point, CSS rule
+- [x] 07-03-PLAN.md — UI: LeaderboardPage component, dashboard card entry point, CSS rule
 
 **Status:** Pending
 
