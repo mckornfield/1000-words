@@ -394,6 +394,7 @@ button:disabled {
 .achievements-card { grid-column: span 6; animation: fadeUp 360ms 220ms ease both; }
 .store-card        { grid-column: span 6; animation: fadeUp 360ms 260ms ease both; }
 .timeline-card     { grid-column: span 6; animation: fadeUp 360ms 300ms ease both; }
+.leaderboard-card  { grid-column: span 6; animation: fadeUp 360ms 340ms ease both; }
 
 /* ─────────────────────────────────────────
    Card section header
@@ -939,6 +940,10 @@ button:disabled {
 	.lesson-header {
 		flex-direction: column;
 		align-items: flex-start;
+	}
+
+	.level-col {
+		display: none;
 	}
 }
 

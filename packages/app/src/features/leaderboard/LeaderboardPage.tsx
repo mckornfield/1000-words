@@ -311,7 +311,7 @@ export function LeaderboardPage({ dashboardData }: { dashboardData: DashboardDat
       .finally(() => {
         setLoading(false);
       });
-  }, [leaderboardRepo, userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [leaderboardRepo, userId]);
 
   const currentUserInTop = entries.some((e) => e.userId === userId);
   const shouldPinUser = currentEntry !== null && !currentUserInTop;
