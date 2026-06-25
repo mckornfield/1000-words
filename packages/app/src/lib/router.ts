@@ -16,6 +16,7 @@
  * - /profile/customization (cosmetics)
  * - /objectives (daily goals & milestones hub)
  * - /objectives/:objectiveId (detail)
+ * - /leaderboard (leaderboard rankings)
  */
 
 // ─── Route Types ──────────────────────────────────────────────────────────
@@ -35,7 +36,8 @@ export type RoutePath =
   | "/profile/customization"
   | "/profile/settings"
   | "/objectives"
-  | "/objectives/:objectiveId";
+  | "/objectives/:objectiveId"
+  | "/leaderboard";
 
 export interface RouteParams {
   lessonId?: string;
@@ -122,6 +124,10 @@ export function parseRoute(): ParsedRoute {
     }
   }
 
+  if (segments[0] === "leaderboard") {
+    return { path: "/leaderboard", params: {} };
+  }
+
   // Unrecognized path — redirect to login
   return { path: "/login", params: {} };
 }
@@ -197,6 +203,7 @@ export function getParentRoute(currentRoute: RoutePath): RoutePath | null {
     if (currentRoute === "/objectives/:objectiveId") return "/objectives" as RoutePath;
     return "/dashboard" as RoutePath;
   }
+  if (currentRoute === "/leaderboard") return "/dashboard";
   if (currentRoute === "/dashboard") return null;
   return "/dashboard" as RoutePath;
 }
@@ -240,6 +247,8 @@ export function getRouteBreadcrumbLabel(
       return "Daily Goals";
     case "/objectives/:objectiveId":
       return "Objective Details";
+    case "/leaderboard":
+      return "Leaderboard";
     default:
       return "Home";
   }
