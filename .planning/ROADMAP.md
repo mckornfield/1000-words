@@ -21,7 +21,7 @@
 - Current user row highlighted
 - Follows existing `supabase*Repository` + `mock*Repository` pattern in `data/` layer
 
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 **Wave 1**
@@ -30,7 +30,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 07-02-PLAN.md — Wiring: /leaderboard route in router.ts, repo injection + renderPage case in App.tsx
+- [x] 07-02-PLAN.md — Wiring: /leaderboard route in router.ts, repo injection + renderPage case in App.tsx
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -50,4 +50,4 @@ Plans:
 
 ---
 
-*Last updated: 2026-06-23*
+*Last updated: 2026-06-25*

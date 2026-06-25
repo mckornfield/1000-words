@@ -4,12 +4,12 @@ milestone: v1.0
 milestone_name: milestone
 status: unknown
 stopped_at: Phase 7 UI-SPEC approved
-last_updated: "2026-06-25T01:52:52.601Z"
+last_updated: "2026-06-25T01:59:40Z"
 progress:
   total_phases: 2
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -42,6 +42,8 @@ progress:
 | Leaderboard uses SECURITY DEFINER RPCs (get_leaderboard, get_current_user_rank) for cross-user aggregation | Implemented — plan 07-01 |
 | Level formula FLOOR(xp/250)+1 consistent in SQL and TypeScript mock | Established in plan 07-01 |
 | rank=-1 sentinel for getCurrentUserEntry when user is outside top-N window | Established in plan 07-01 |
+| D-08: No NavBar tab for /leaderboard — route registered only in router.ts | Established in plan 07-02 |
+| D-09: getParentRoute('/leaderboard') returns '/dashboard' enabling back-button | Established in plan 07-02 |
 
 ## In-Progress Work (Uncommitted)
 
@@ -69,12 +71,13 @@ progress:
 
 ## Session Continuity
 
-Last session: 2026-06-25T01:51:36Z
-Stopped at: Completed 07-01-PLAN.md — leaderboard data layer (SQL migration, types, repositories)
-Resume file: .planning/phases/07-leaderboard/07-02-PLAN.md
+Last session: 2026-06-25T01:59:40Z
+Stopped at: Completed 07-02-PLAN.md — router wiring and App.tsx integration for /leaderboard
+Resume file: .planning/phases/07-leaderboard/07-03-PLAN.md
 
 ## Performance Metrics
 
 | Phase | Plan | Duration | Notes |
 |-------|------|----------|-------|
 | Phase 07 P01 | 4m | 3 tasks | 5 files |
+| Phase 07 P02 | 3m | 2 tasks | 3 files |
