@@ -4,12 +4,12 @@ milestone: v1.0
 milestone_name: milestone
 status: unknown
 stopped_at: Phase 7 UI-SPEC approved
-last_updated: "2026-06-24T00:23:52.043Z"
+last_updated: "2026-06-25T01:52:52.601Z"
 progress:
   total_phases: 2
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -39,6 +39,9 @@ progress:
 | Token balance on profiles table (not separate wallet) | Implemented — migration 20260623000000_add_tokens.sql |
 | Achievement unlock check client-side via pure achievementEngine.ts | Implemented — pure function, no I/O |
 | Achievement prerequisite chaining via data (prerequisiteId field) | Implemented in engine |
+| Leaderboard uses SECURITY DEFINER RPCs (get_leaderboard, get_current_user_rank) for cross-user aggregation | Implemented — plan 07-01 |
+| Level formula FLOOR(xp/250)+1 consistent in SQL and TypeScript mock | Established in plan 07-01 |
+| rank=-1 sentinel for getCurrentUserEntry when user is outside top-N window | Established in plan 07-01 |
 
 ## In-Progress Work (Uncommitted)
 
@@ -66,6 +69,12 @@ progress:
 
 ## Session Continuity
 
-Last session: 2026-06-24T00:23:52.034Z
-Stopped at: Phase 7 UI-SPEC approved
-Resume file: .planning/phases/07-leaderboard/07-UI-SPEC.md
+Last session: 2026-06-25T01:51:36Z
+Stopped at: Completed 07-01-PLAN.md — leaderboard data layer (SQL migration, types, repositories)
+Resume file: .planning/phases/07-leaderboard/07-02-PLAN.md
+
+## Performance Metrics
+
+| Phase | Plan | Duration | Notes |
+|-------|------|----------|-------|
+| Phase 07 P01 | 4m | 3 tasks | 5 files |

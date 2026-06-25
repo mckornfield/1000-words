@@ -21,12 +21,12 @@
 - Current user row highlighted
 - Follows existing `supabase*Repository` + `mock*Repository` pattern in `data/` layer
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 **Wave 1**
 
-- [ ] 07-01-PLAN.md — Data layer: SQL migration (SECURITY DEFINER RPC), LeaderboardEntry types, Supabase + mock repositories
+- [x] 07-01-PLAN.md — Data layer: SQL migration (SECURITY DEFINER RPC), LeaderboardEntry types, Supabase + mock repositories
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
