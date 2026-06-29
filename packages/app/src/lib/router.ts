@@ -24,6 +24,7 @@
 export type RoutePath =
   | "/login"
   | "/dashboard"
+  | "/study"
   | "/lessons"
   | "/lessons/:lessonId"
   | "/lessons/:lessonId/study"
@@ -58,8 +59,10 @@ export interface ParsedRoute {
  * If the path doesn't match any known route, returns "/login".
  */
 export function parseRoute(): ParsedRoute {
-  const pathname = window.location.pathname.toLowerCase();
-  const segments = pathname.split("/").filter(Boolean);
+  const rawPathname = window.location.pathname;
+  const rawSegments = rawPathname.split("/").filter(Boolean);
+  // Use lowercase only for structural matching, not for parameter values
+  const segments = rawSegments.map((s) => s.toLowerCase());
 
   // Match against known route patterns
   if (segments.length === 0 || segments[0] === "login") {
@@ -70,15 +73,19 @@ export function parseRoute(): ParsedRoute {
     return { path: "/dashboard", params: {} };
   }
 
+  if (segments[0] === "study") {
+    return { path: "/study", params: {} };
+  }
+
   if (segments[0] === "lessons") {
     if (segments.length === 1) {
       return { path: "/lessons", params: {} };
     }
     if (segments.length === 2) {
-      return { path: "/lessons/:lessonId", params: { lessonId: segments[1] } };
+      return { path: "/lessons/:lessonId", params: { lessonId: rawSegments[1] } };
     }
     if (segments.length === 3 && segments[2] === "study") {
-      return { path: "/lessons/:lessonId/study", params: { lessonId: segments[1] } };
+      return { path: "/lessons/:lessonId/study", params: { lessonId: rawSegments[1] } };
     }
   }
 
@@ -87,7 +94,7 @@ export function parseRoute(): ParsedRoute {
       return { path: "/achievements", params: {} };
     }
     if (segments.length === 2) {
-      return { path: "/achievements/:achievementId", params: { achievementId: segments[1] } };
+      return { path: "/achievements/:achievementId", params: { achievementId: rawSegments[1] } };
     }
   }
 
@@ -96,7 +103,7 @@ export function parseRoute(): ParsedRoute {
       return { path: "/shop", params: {} };
     }
     if (segments.length === 2) {
-      return { path: "/shop/:itemId", params: { itemId: segments[1] } };
+      return { path: "/shop/:itemId", params: { itemId: rawSegments[1] } };
     }
   }
 
@@ -120,7 +127,7 @@ export function parseRoute(): ParsedRoute {
       return { path: "/objectives", params: {} };
     }
     if (segments.length === 2) {
-      return { path: "/objectives/:objectiveId", params: { objectiveId: segments[1] } };
+      return { path: "/objectives/:objectiveId", params: { objectiveId: rawSegments[1] } };
     }
   }
 

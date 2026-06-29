@@ -27,13 +27,7 @@ interface FallbackGlyphProps {
 export function FallbackGlyph({ primary, fallback, className }: FallbackGlyphProps) {
   return (
     <span className={className} aria-label={fallback}>
-      {/* Visual emoji — hidden from assistive tech to avoid redundant announcements */}
       <span aria-hidden="true">{primary}</span>
-      {/* Muted text cue visible alongside the emoji for glyph-poor environments */}
-      <span className="fallback-alt" aria-hidden="true">
-        {fallback}
-      </span>
-      {/* Accessible label for screen readers */}
       <span className="sr-only">{fallback}</span>
     </span>
   );

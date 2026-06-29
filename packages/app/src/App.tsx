@@ -180,7 +180,7 @@ export function App() {
     return <LoginPage config={appConfig} onSignIn={signIn} />;
   }
 
-  const hideNav = currentRoute.path === "/lessons/:lessonId/study";
+  const hideNav = currentRoute.path === "/study" || currentRoute.path === "/lessons/:lessonId/study";
 
   function renderPage() {
     const data = dashboardData!;
@@ -189,15 +189,22 @@ export function App() {
     const achievementId = params.achievementId ?? "";
     const itemId        = params.itemId ?? "";
 
+    // Derive language info from lesson track data
+    const trackId = data.lessons[0]?.trackId ?? "";
+    const langPair = trackId.includes("-ZH") ? "en-zh" : "en-es";
+    const sessionTitle = trackId.includes("-ZH") ? "Mandarin" : "Spanish";
+
     switch (path) {
       case "/dashboard":
         return <DashboardPage dashboardData={data} avatarSrc={avatarSrc} onSignOut={signOut} />;
+      case "/study":
+        return <StudySession dashboardData={data} langPair={langPair} sessionTitle={sessionTitle} />;
       case "/lessons":
         return <LessonsList dashboardData={data} onNavigateToLesson={() => {}} />;
       case "/lessons/:lessonId":
         return <LessonDetail dashboardData={data} lessonId={lessonId} />;
       case "/lessons/:lessonId/study":
-        return <StudySession dashboardData={data} lessonId={lessonId} />;
+        return <StudySession dashboardData={data} langPair={langPair} sessionTitle={sessionTitle} />;
       case "/achievements":
         return <AchievementsGallery dashboardData={data} />;
       case "/achievements/:achievementId":

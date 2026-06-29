@@ -156,6 +156,7 @@ supabase/.temp
 # Playwright
 test-results/
 playwright-report/
+.playwright-mcp/
 
 # Synced copies under app/public/ are always rebuilt by sync-to-app.ts at prebuild.
 # The source decks + audio under packages/content/{data,audio}/ are checked in.
