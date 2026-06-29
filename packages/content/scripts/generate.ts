@@ -105,7 +105,9 @@ async function main(): Promise<void> {
       const cards = await draftBatch(client, cfg, batch.map((b) => b.word));
       for (const [i, entry] of batch.entries()) {
         const d = cards[i]!;
-        const pronunciation = pronunciationFor(args.langPair, d.word);
+        // Chinese: deterministic pinyin from pinyin-pro. Japanese: hiragana from LLM.
+        // Korean/Spanish: orthography is self-pronouncing, no hint needed.
+        const pronunciation = pronunciationFor(args.langPair, d.word) ?? d.pronunciation;
         existingById.set(entry.id, {
           id: entry.id,
           langPair: args.langPair,

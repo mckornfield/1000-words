@@ -12,33 +12,35 @@ export interface WordEntry {
   partOfSpeech: string;
   exampleSentence: string;
   exampleTranslation: string;
+  pronunciation?: string;
   audio: string;
 }
 
 // ─── Cache ────────────────────────────────────────────────────────────────────
 
-let _cachedWords: WordEntry[] | null = null;
-let _loadPromise: Promise<WordEntry[]> | null = null;
+const _cache = new Map<string, WordEntry[]>();
+const _promises = new Map<string, Promise<WordEntry[]>>();
 
 /**
- * Lazily fetch and cache all word entries from the en-es dataset.
- * Subsequent calls return the same promise/result.
+ * Lazily fetch and cache all word entries for a given lang pair.
+ * Subsequent calls for the same pair return the cached result.
  */
-export async function loadAllWords(): Promise<WordEntry[]> {
-  if (_cachedWords) return _cachedWords;
-  if (_loadPromise) return _loadPromise;
+export async function loadAllWords(langPair = "en-es"): Promise<WordEntry[]> {
+  if (_cache.has(langPair)) return _cache.get(langPair)!;
+  if (_promises.has(langPair)) return _promises.get(langPair)!;
 
-  _loadPromise = fetch("/assets/data/en-es.json")
+  const promise = fetch(`/assets/data/${langPair}.json`)
     .then((r) => {
-      if (!r.ok) throw new Error(`Failed to fetch word data: ${r.status}`);
+      if (!r.ok) throw new Error(`Failed to fetch word data for ${langPair}: ${r.status}`);
       return r.json() as Promise<WordEntry[]>;
     })
     .then((data) => {
-      _cachedWords = data;
+      _cache.set(langPair, data);
       return data;
     });
 
-  return _loadPromise;
+  _promises.set(langPair, promise);
+  return promise;
 }
 
 // ─── Difficulty ranges (index into the 1–1000 frequency-ranked list) ─────────
@@ -62,9 +64,10 @@ export function getWordsForDifficulty(
   count = 20,
   offset = 0,
 ): WordEntry[] {
-  if (!_cachedWords) return [];
+  const cached = _cache.get("en-es");
+  if (!cached) return [];
   const [start, end] = DIFFICULTY_RANGES[difficulty];
-  return (_cachedWords ?? []).slice(start + offset, Math.min(start + offset + count, end));
+  return cached.slice(start + offset, Math.min(start + offset + count, end));
 }
 
 /**
@@ -75,7 +78,7 @@ export async function loadWordsForLesson(
   count = 20,
   offset = 0,
 ): Promise<WordEntry[]> {
-  const all = await loadAllWords();
+  const all = await loadAllWords("en-es");
   const [start, end] = DIFFICULTY_RANGES[difficulty];
   return all.slice(start + offset, Math.min(start + offset + count, end));
 }
@@ -96,10 +99,9 @@ export async function loadWordsForLessonId(
 }
 
 /**
- * Load the full word pool for a given lang pair (e.g. "en-es").
+ * Load the full word pool for a given lang pair (e.g. "en-es", "en-zh").
  * Passes everything to the FSRS engine so it can pick what's due + new words.
  */
 export async function loadWordsForLangPair(langPair: string): Promise<WordEntry[]> {
-  const all = await loadAllWords();
-  return langPair === "en-es" ? all : all.filter((w) => w.langPair === langPair);
+  return loadAllWords(langPair);
 }

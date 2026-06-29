@@ -24,6 +24,18 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
   const [busy, setBusy]               = useState(false);
 
   useEffect(() => {
+    // Read live repo state (not the stale fixture) so purchases/equips made
+    // earlier in the session are reflected when navigating back to this item.
+    Promise.all([
+      inventoryRepo.getInventory(userId),
+      inventoryRepo.getEquipped(userId),
+    ]).then(([inv, eq]) => {
+      setIsOwned(inv.some((r) => r.itemId === itemId));
+      setIsEquipped(eq.some((r) => r.itemId === itemId));
+    }).catch(console.error);
+  }, [userId, itemId, inventoryRepo]);
+
+  useEffect(() => {
     achievementRepo.getUserAchievements(userId).then(setUserAchievements).catch(console.error);
   }, [userId, achievementRepo]);
 

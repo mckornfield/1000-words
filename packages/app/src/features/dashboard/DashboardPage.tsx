@@ -8,11 +8,12 @@ interface DashboardPageProps {
   onSignOut: () => void;
 }
 
-function trackLanguage(trackId: string): string {
-  if (trackId.includes("-ES")) return "Spanish";
-  if (trackId.includes("-ZH")) return "Mandarin";
-  return "Language";
-}
+const STUDY_LANGUAGES = [
+  { langPair: "en-es", label: "Study Spanish", flag: "🇪🇸" },
+  { langPair: "en-zh", label: "Study Mandarin", flag: "🇨🇳" },
+  { langPair: "en-ko", label: "Study Korean", flag: "🇰🇷" },
+  { langPair: "en-ja", label: "Study Japanese", flag: "🇯🇵" },
+];
 
 function goalStatusBadge(status: string): string {
   if (status === "completed") return "badge badge-ok";
@@ -27,8 +28,7 @@ function goalStatusLabel(status: string): string {
 }
 
 export function DashboardPage({ dashboardData, avatarSrc, onSignOut }: DashboardPageProps) {
-  const { profile, lessons, dailyGoals } = dashboardData;
-  const language = trackLanguage(lessons[0]?.trackId ?? "");
+  const { profile, dailyGoals } = dashboardData;
   const xpPct = Math.min(Math.round((profile.xp / profile.xpToNextLevel) * 100), 100);
 
   return (
@@ -94,28 +94,31 @@ export function DashboardPage({ dashboardData, avatarSrc, onSignOut }: Dashboard
           </div>
         </div>
 
-        {/* Study CTA */}
-        <div
-          className="bento-cell"
-          style={{ marginBottom: "1rem", padding: "1.5rem 1rem", textAlign: "center" }}
-        >
-          <button
-            onClick={() => navigate("/study")}
-            style={{
-              width: "100%",
-              padding: "1rem",
-              fontSize: "1.15rem",
-              fontWeight: 800,
-              background: "var(--accent)",
-              color: "#fff",
-              border: "none",
-              borderRadius: "var(--radius-sm)",
-              cursor: "pointer",
-              letterSpacing: "0.02em",
-            }}
-          >
-            Study {language}
-          </button>
+        {/* Study CTAs */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "1rem" }}>
+          {STUDY_LANGUAGES.map(({ langPair, label, flag }) => (
+            <button
+              key={langPair}
+              onClick={() => navigate("/study/:langPair", { langPair })}
+              style={{
+                padding: "0.9rem 0.5rem",
+                fontSize: "0.95rem",
+                fontWeight: 800,
+                background: "var(--accent)",
+                color: "#fff",
+                border: "none",
+                borderRadius: "var(--radius-sm)",
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "0.25rem",
+              }}
+            >
+              <span style={{ fontSize: "1.5rem" }}>{flag}</span>
+              {label}
+            </button>
+          ))}
         </div>
 
         {/* Daily Goals */}

@@ -2,6 +2,7 @@ import type { LangPair } from "../../src/schema";
 
 export interface DraftedCard {
   word: string;
+  pronunciation?: string;
   translation: string;
   partOfSpeech: string;
   exampleSentence: string;
@@ -10,7 +11,7 @@ export interface DraftedCard {
 
 export interface LangPairConfig {
   langPair: LangPair;
-  targetCode: "es" | "zh";
+  targetCode: "es" | "zh" | "ko" | "ja";
   targetName: string;
   sourceName: string;
   frequencyFile: string;
@@ -36,5 +37,23 @@ export const LANG_PAIR_CONFIGS: Record<LangPair, LangPairConfig> = {
     frequencyFile: "zh.txt",
     idPrefix: "zh",
     elevenLabsVoiceEnv: "ELEVENLABS_VOICE_ZH",
+  },
+  "en-ko": {
+    langPair: "en-ko",
+    targetCode: "ko",
+    targetName: "Korean",
+    sourceName: "English",
+    frequencyFile: "ko.txt",
+    idPrefix: "ko",
+    elevenLabsVoiceEnv: "ELEVENLABS_VOICE_KO",
+  },
+  "en-ja": {
+    langPair: "en-ja",
+    targetCode: "ja",
+    targetName: "Japanese",
+    sourceName: "English",
+    frequencyFile: "ja.txt",
+    idPrefix: "ja",
+    elevenLabsVoiceEnv: "ELEVENLABS_VOICE_JA",
   },
 };
