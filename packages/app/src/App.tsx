@@ -37,7 +37,7 @@ import { ObjectivesHub } from "./features/objectives/ObjectivesHub";
 import { LeaderboardPage } from "./features/leaderboard/LeaderboardPage";
 import { NavBar } from "./features/shared/NavBar";
 import { ToastProvider } from "./features/shared/Toast";
-import { parseRoute, navigate, requiresAuth, type ParsedRoute } from "./lib/router";
+import { parseRoute, navigate, getParentRoute, requiresAuth, type ParsedRoute } from "./lib/router";
 
 // ─── Singleton repos created once outside the component ───────────────────────
 const supabaseAuthRepo = createSupabaseAuthRepository();
@@ -75,6 +75,18 @@ export function App() {
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
+
+  // Global Esc = go to parent route (study session handles its own Esc).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const parent = getParentRoute(currentRoute.path);
+      if (parent) navigate(parent);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [currentRoute.path]);
 
   // Route guard.
   useEffect(() => {
@@ -180,7 +192,7 @@ export function App() {
     return <LoginPage config={appConfig} onSignIn={signIn} />;
   }
 
-  const hideNav = currentRoute.path === "/study" || currentRoute.path === "/lessons/:lessonId/study";
+  const hideNav = currentRoute.path === "/study/:langPair" || currentRoute.path === "/lessons/:lessonId/study";
 
   function renderPage() {
     const data = dashboardData!;
@@ -189,22 +201,26 @@ export function App() {
     const achievementId = params.achievementId ?? "";
     const itemId        = params.itemId ?? "";
 
-    // Derive language info from lesson track data
-    const trackId = data.lessons[0]?.trackId ?? "";
-    const langPair = trackId.includes("-ZH") ? "en-zh" : "en-es";
-    const sessionTitle = trackId.includes("-ZH") ? "Mandarin" : "Spanish";
+    const LANG_TITLES: Record<string, string> = {
+      "en-es": "Spanish",
+      "en-zh": "Mandarin",
+      "en-ko": "Korean",
+      "en-ja": "Japanese",
+    };
 
     switch (path) {
       case "/dashboard":
         return <DashboardPage dashboardData={data} avatarSrc={avatarSrc} onSignOut={signOut} />;
-      case "/study":
-        return <StudySession dashboardData={data} langPair={langPair} sessionTitle={sessionTitle} />;
+      case "/study/:langPair": {
+        const lp = params.langPair ?? "en-es";
+        return <StudySession dashboardData={data} langPair={lp} sessionTitle={LANG_TITLES[lp] ?? lp} />;
+      }
       case "/lessons":
         return <LessonsList dashboardData={data} onNavigateToLesson={() => {}} />;
       case "/lessons/:lessonId":
         return <LessonDetail dashboardData={data} lessonId={lessonId} />;
       case "/lessons/:lessonId/study":
-        return <StudySession dashboardData={data} langPair={langPair} sessionTitle={sessionTitle} />;
+        return <StudySession dashboardData={data} langPair="en-es" sessionTitle="Spanish" />;
       case "/achievements":
         return <AchievementsGallery dashboardData={data} />;
       case "/achievements/:achievementId":
