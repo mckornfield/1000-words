@@ -94,3 +94,12 @@ export async function loadWordsForLessonId(
   const offset = (lessonNum - 1) * count;
   return loadWordsForLesson(difficulty, count, offset);
 }
+
+/**
+ * Load the full word pool for a given lang pair (e.g. "en-es").
+ * Passes everything to the FSRS engine so it can pick what's due + new words.
+ */
+export async function loadWordsForLangPair(langPair: string): Promise<WordEntry[]> {
+  const all = await loadAllWords();
+  return langPair === "en-es" ? all : all.filter((w) => w.langPair === langPair);
+}

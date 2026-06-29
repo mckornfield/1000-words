@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { navigate } from "../../lib/router";
 import type { DashboardData } from "../../data/account/repository";
-import { loadWordsForLessonId, type WordEntry } from "../../lib/wordData";
+import { loadWordsForLangPair, type WordEntry } from "../../lib/wordData";
 import { useToast } from "../shared/Toast";
-import { Breadcrumb } from "../shared/Breadcrumb";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
 import { useAppContext } from "../../data/AppContext";
 import { buildSession, scheduleReview, initialState } from "@1000words/engine";
@@ -13,7 +12,8 @@ import { checkAchievements } from "../../lib/achievementEngine";
 
 interface StudySessionProps {
   dashboardData: DashboardData;
-  lessonId: string;
+  langPair: string;
+  sessionTitle: string;
 }
 
 interface SessionCard extends WordEntry {
@@ -30,16 +30,16 @@ interface SessionResult {
 
 function SessionComplete({
   results,
-  lessonTitle,
-  xpReward,
+  sessionTitle,
+  maxXp,
   equippedBorder,
   equippedBadge,
   onRestart,
   onBack,
 }: {
   results: SessionResult[];
-  lessonTitle: string;
-  xpReward: number;
+  sessionTitle: string;
+  maxXp: number;
   equippedBorder?: { emoji: string; emojiFallback: string; name: string } | null;
   equippedBadge?:  { emoji: string; emojiFallback: string; name: string } | null;
   onRestart: () => void;
@@ -48,7 +48,7 @@ function SessionComplete({
   const total    = results.length;
   const correct  = results.filter((r) => r.rating === "good" || r.rating === "easy").length;
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
-  const earnedXp = Math.round(xpReward * (accuracy / 100));
+  const earnedXp = Math.round(maxXp * (accuracy / 100));
 
   return (
     <div className="session-complete">
@@ -60,7 +60,7 @@ function SessionComplete({
           {accuracy === 100 ? "Perfect!" : accuracy >= 70 ? "Great work!" : "Keep going!"}
         </h1>
         <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.95rem" }}>
-          You finished <strong>{lessonTitle}</strong>
+          {sessionTitle} session complete
         </p>
       </div>
       <div className="session-stats-grid">
@@ -113,7 +113,7 @@ function SessionComplete({
       </div>
       <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center" }}>
         <button onClick={onBack} style={{ background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)" }}>
-          ← Back to Lesson
+          ← Home
         </button>
         <button onClick={onRestart} style={{ background: "var(--accent)" }}>
           Study Again
@@ -125,8 +125,7 @@ function SessionComplete({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
-  const lesson = dashboardData.lessons.find((l) => l.lessonId === lessonId);
+export function StudySession({ dashboardData, langPair, sessionTitle }: StudySessionProps) {
   const { showXp, showSuccess } = useToast();
   const { userId, progressStore, profileRepo, achievementRepo, goalRepo } = useAppContext();
   const equippedBorder = dashboardData.storeItems.find((i) => i.category === "profile_border" && i.isEquipped);
@@ -140,23 +139,16 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
   const [isDone, setIsDone]         = useState(false);
   const [sessionKey, setSessionKey] = useState(0);
 
-  // Keep a live reference to FSRS progress so handleRating can always write
-  // the latest state without needing it in the dependency array.
   const progressRef = useRef<Record<string, import("@1000words/engine").FsrsState>>({});
   const startTimesRef = useRef<Record<string, number>>({});
 
   useEffect(() => {
-    if (!lesson) return;
     setIsLoading(true);
-    loadWordsForLessonId(lessonId, lesson.difficulty, 20)
+    loadWordsForLangPair(langPair)
       .then(async (words) => {
-        // Derive lang pair from first card ID (e.g. "es-0001" → "en-es")
-        const langPair = (words[0]?.langPair ?? "en-es") as import("@1000words/content").LangPair;
-
-        // Load FSRS progress from backend, then order cards by due date.
         let progress: Record<string, import("@1000words/engine").FsrsState> = {};
         try {
-          progress = await progressStore.getProgress(userId, langPair);
+          progress = await progressStore.getProgress(userId, langPair as import("@1000words/content").LangPair);
         } catch (err) {
           console.warn("[StudySession] Failed to load progress, starting fresh:", err);
         }
@@ -164,28 +156,28 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
 
         const ordered = buildSession(words as unknown as Card[], progress, {
           now: new Date(),
-          newCardsPerDay: 20,
+          newCardsPerDay: 10,
           maxCards: 20,
         });
-        // If all cards are not yet due, fall back to the original word order.
-        const sessionWords = ordered.length > 0 ? ordered : words;
+        const sessionWords = ordered.length > 0 ? ordered : words.slice(0, 20);
         setCards((sessionWords as WordEntry[]).map((w, i) => ({ ...w, cardKey: `${w.id}-${i}` })));
         setIsLoading(false);
       })
       .catch(() => {
         const fallback: SessionCard[] = Array.from({ length: 15 }, (_, i) => ({
-          id: `fb-${i}`, langPair: "en-es", word: `Palabra ${i + 1}`, translation: `Word ${i + 1}`,
-          partOfSpeech: "noun", exampleSentence: `Ejemplo ${i + 1}.`, exampleTranslation: `Example ${i + 1}.`,
+          id: `fb-${i}`, langPair, word: `Word ${i + 1}`, translation: `Translation ${i + 1}`,
+          partOfSpeech: "noun", exampleSentence: `Example ${i + 1}.`, exampleTranslation: `Example ${i + 1}.`,
           audio: "", cardKey: `fb-${i}`,
         }));
         setCards(fallback);
         setIsLoading(false);
       });
-  }, [lessonId, lesson, sessionKey, userId, progressStore]);
+  }, [langPair, sessionKey, userId, progressStore]);
 
   const currentCard = cards[cardIndex];
   const totalCards  = cards.length;
   const progress    = totalCards > 0 ? (cardIndex / totalCards) * 100 : 0;
+  const maxXp       = totalCards * 15;
 
   const handleRating = (rating: Rating) => {
     if (!currentCard) return;
@@ -193,7 +185,6 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
     const now = new Date();
     const elapsedMs = now.getTime() - (startTimesRef.current[currentCard.id] ?? now.getTime());
 
-    // Compute next FSRS state and persist (fire-and-forget).
     if (!currentCard.id.startsWith("fb-")) {
       const currentState = progressRef.current[currentCard.id] ?? initialState(now);
       const nextState = scheduleReview(currentState, rating, now);
@@ -208,15 +199,13 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
     if (cardIndex >= totalCards - 1) {
       const correct = newResults.filter((r) => r.rating === "good" || r.rating === "easy").length;
       const accuracy = Math.round((correct / newResults.length) * 100);
-      const earnedXp = Math.round((lesson?.xpReward ?? 100) * (accuracy / 100));
+      const earnedXp = Math.round(maxXp * (accuracy / 100));
 
-      // Persist XP gain and goal progress (fire-and-forget).
       if (earnedXp > 0) {
         profileRepo.addXp(userId, earnedXp).catch(console.error);
       }
       goalRepo.incrementGoal(userId, "cards_reviewed", newResults.length).catch(console.error);
 
-      // Achievement unlock check at session end.
       (async () => {
         try {
           const [userAchievements, profile] = await Promise.all([
@@ -224,9 +213,7 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
             profileRepo.getProfile(userId),
           ]);
           const earned = new Set(userAchievements.map((a) => a.achievementId));
-          const lessonsCompleted = dashboardData.lessons.filter(
-            (l) => l.status === "completed",
-          ).length;
+          const lessonsCompleted = dashboardData.lessons.filter((l) => l.status === "completed").length;
           const newlyUnlocked = checkAchievements(
             dashboardData.achievements,
             earned,
@@ -250,11 +237,10 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
         }
       })();
 
-      showXp(earnedXp, `${lesson?.title ?? "Lesson"} complete`);
+      showXp(earnedXp, `${sessionTitle} session complete`);
       if (accuracy === 100) showSuccess("Perfect score!", "You aced every card 🎉");
       setIsDone(true);
     } else {
-      // Record the start time for the next card.
       const nextCard = cards[cardIndex + 1];
       if (nextCard) startTimesRef.current[nextCard.id] = Date.now();
       setCardIndex((i) => i + 1);
@@ -265,6 +251,9 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
   const stateRef = useRef({ isFlipped, isDone, isLoading });
   stateRef.current = { isFlipped, isDone, isLoading };
 
+  const handleRatingRef = useRef(handleRating);
+  handleRatingRef.current = handleRating;
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const { isFlipped, isDone, isLoading } = stateRef.current;
@@ -272,10 +261,10 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       switch (e.key) {
         case " ": case "Enter": e.preventDefault(); setIsFlipped((f) => !f); break;
-        case "1": if (isFlipped) { e.preventDefault(); handleRating("again"); } break;
-        case "2": if (isFlipped) { e.preventDefault(); handleRating("hard"); } break;
-        case "3": if (isFlipped) { e.preventDefault(); handleRating("good"); } break;
-        case "4": if (isFlipped) { e.preventDefault(); handleRating("easy"); } break;
+        case "1": if (isFlipped) { e.preventDefault(); handleRatingRef.current("again"); } break;
+        case "2": if (isFlipped) { e.preventDefault(); handleRatingRef.current("hard"); } break;
+        case "3": if (isFlipped) { e.preventDefault(); handleRatingRef.current("good"); } break;
+        case "4": if (isFlipped) { e.preventDefault(); handleRatingRef.current("easy"); } break;
       }
     };
     window.addEventListener("keydown", onKey);
@@ -287,27 +276,16 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
     setSessionKey((k) => k + 1);
   };
 
-  if (!lesson) {
-    return (
-      <section className="screen swiss page-enter">
-        <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
-          <h2>Lesson not found</h2>
-          <button onClick={() => navigate("/lessons")} style={{ marginTop: "1rem" }}>Back to Lessons</button>
-        </div>
-      </section>
-    );
-  }
-
   if (isDone) {
     return (
       <SessionComplete
         results={results}
-        lessonTitle={lesson.title}
-        xpReward={lesson.xpReward}
+        sessionTitle={sessionTitle}
+        maxXp={maxXp}
         equippedBorder={equippedBorder}
         equippedBadge={equippedBadge}
         onRestart={handleRestart}
-        onBack={() => navigate("/lessons/:lessonId", { lessonId })}
+        onBack={() => navigate("/dashboard")}
       />
     );
   }
@@ -327,14 +305,13 @@ export function StudySession({ dashboardData, lessonId }: StudySessionProps) {
     <div className="study-screen page-enter">
       <div className="study-header">
         <button
-          onClick={() => navigate("/lessons/:lessonId", { lessonId })}
+          onClick={() => navigate("/dashboard")}
           style={{ background: "transparent", border: "none", color: "var(--text-secondary)", cursor: "pointer", padding: "0.25rem 0", fontSize: "0.9rem", fontWeight: 600, textTransform: "none", letterSpacing: 0, minWidth: "auto" }}
         >
           ✕ Exit
         </button>
-        <div style={{ flex: 1, textAlign: "center" }}>
-          <Breadcrumb currentPath="/lessons/:lessonId/study" params={{ lessonId }} labels={{ lessonTitle: lesson.title }} />
-          <div style={{ fontSize: "0.9rem", fontWeight: 700, marginTop: "-0.25rem" }}>{lesson.title}</div>
+        <div style={{ flex: 1, textAlign: "center", fontWeight: 700, fontSize: "0.9rem" }}>
+          {sessionTitle}
         </div>
         <div style={{ fontSize: "0.85rem", color: "var(--muted)", fontWeight: 600, fontVariantNumeric: "tabular-nums", minWidth: "3.5rem", textAlign: "right" }}>
           {cardIndex + 1} / {totalCards}
