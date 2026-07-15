@@ -24,7 +24,7 @@
 export type RoutePath =
   | "/login"
   | "/dashboard"
-  | "/study"
+  | "/study/:langPair"
   | "/lessons"
   | "/lessons/:lessonId"
   | "/lessons/:lessonId/study"
@@ -41,6 +41,7 @@ export type RoutePath =
   | "/leaderboard";
 
 export interface RouteParams {
+  langPair?: string;
   lessonId?: string;
   achievementId?: string;
   itemId?: string;
@@ -73,8 +74,8 @@ export function parseRoute(): ParsedRoute {
     return { path: "/dashboard", params: {} };
   }
 
-  if (segments[0] === "study") {
-    return { path: "/study", params: {} };
+  if (segments[0] === "study" && segments.length >= 2) {
+    return { path: "/study/:langPair", params: { langPair: rawSegments[1] } };
   }
 
   if (segments[0] === "lessons") {
@@ -149,6 +150,9 @@ export function navigate(route: RoutePath, params: RouteParams = {}): void {
   let pathname: string = route;
 
   // Replace route parameters with actual values
+  if (route.includes(":langPair") && params.langPair) {
+    pathname = pathname.replace(":langPair", params.langPair);
+  }
   if (route.includes(":lessonId") && params.lessonId) {
     pathname = pathname.replace(":lessonId", params.lessonId);
   }

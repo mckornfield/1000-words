@@ -14,6 +14,8 @@ Han-only for `zh`); see git history for the one-shot script used originally.
 |----------|--------------------------------------------|---------------------|
 | `es.txt` | `content/2018/es/es_50k.txt`               | `/^[a-záéíóúñü]+$/i`|
 | `zh.txt` | `content/2018/zh_cn/zh_cn_50k.txt`         | `/^\p{Han}+$/u`     |
+| `ko.txt` | `content/2018/ko/ko_50k.txt`               | `/^[\p{Hangul}]+$/u` (AC00–D7A3 + Jamo) |
+| `ja.txt` | `content/2018/ja/ja_full.txt`              | `/^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]+$/u` |
 
 Lists are checked in so the pipeline is reproducible without a network fetch
 and so word selection is reviewable in PRs.

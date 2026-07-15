@@ -3,7 +3,7 @@ import type { DraftedCard, LangPairConfig } from "./types";
 
 const MODEL = process.env.LLM_MODEL ?? "gpt-4o-mini";
 
-const SCHEMA_DESCRIPTION = `{
+const SCHEMA_BASE = `{
   "cards": [
     {
       "word": "<input word, exact characters>",
@@ -15,18 +15,40 @@ const SCHEMA_DESCRIPTION = `{
   ]
 }`;
 
+const SCHEMA_WITH_PRONUNCIATION = `{
+  "cards": [
+    {
+      "word": "<input word, exact characters>",
+      "pronunciation": "<romanized pronunciation>",
+      "translation": "<single most common translation>",
+      "partOfSpeech": "<one of: noun, verb, adjective, adverb, pronoun, preposition, conjunction, determiner, interjection, particle, phrase>",
+      "exampleSentence": "<short, beginner-appropriate target-language sentence using the word>",
+      "exampleTranslation": "<faithful source-language translation of exampleSentence>"
+    }
+  ]
+}`;
+
+const PRONUNCIATION_RULES: Partial<Record<string, string>> = {
+  "en-ja": `- pronunciation: Hepburn romaji for the word (e.g. 食べる → "taberu", 私 → "watashi"). English speakers can read this immediately.`,
+  "en-ko": `- pronunciation: Revised Romanization of Korean for the word (e.g. 안녕 → "annyeong", 사람 → "saram"). English speakers can read this immediately.`,
+};
+
 function buildSystemPrompt(cfg: LangPairConfig): string {
+  const pronunciationRule = PRONUNCIATION_RULES[cfg.langPair];
+  const needsPronunciation = !!pronunciationRule;
+  const schema = needsPronunciation ? SCHEMA_WITH_PRONUNCIATION : SCHEMA_BASE;
+
   return `You produce vocabulary cards for a spaced-repetition app teaching ${cfg.sourceName} speakers ${cfg.targetName}.
 
 For each input word in ${cfg.targetName}, return a card with these fields:
 - word: the input word, verbatim (preserve ${cfg.targetName} diacritics or characters exactly; lowercase unless it's a proper noun).
-- translation: the single most common ${cfg.sourceName} meaning in everyday speech. No alternatives, no parentheses. Lowercase unless proper noun.
+${pronunciationRule ? pronunciationRule + "\n" : ""}- translation: the single most common ${cfg.sourceName} meaning in everyday speech. No alternatives, no parentheses. Lowercase unless proper noun.
 - partOfSpeech: lowercase, one of: noun, verb, adjective, adverb, pronoun, preposition, conjunction, determiner, interjection, particle, phrase.
 - exampleSentence: one short, grammatically simple sentence in ${cfg.targetName} (5 to 12 words) using the word naturally, at a beginner register. End with appropriate sentence-final punctuation.
 - exampleTranslation: a faithful ${cfg.sourceName} translation of exampleSentence (not a paraphrase).
 
 Output exactly this JSON shape, with one card per input word, in the same order as the input:
-${SCHEMA_DESCRIPTION}
+${schema}
 
 Hard rules:
 - Return raw JSON only. No markdown, no code fences, no commentary, no preamble.

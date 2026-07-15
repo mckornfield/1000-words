@@ -4,7 +4,7 @@ import { z } from "zod";
  * The set of language pairs the app ships with. Each pair is "<source>-<target>"
  * where source is always the learner's known language (English for now).
  */
-export const LANG_PAIRS = ["en-es", "en-zh"] as const;
+export const LANG_PAIRS = ["en-es", "en-zh", "en-ko", "en-ja"] as const;
 export const LangPairSchema = z.enum(LANG_PAIRS);
 export type LangPair = z.infer<typeof LangPairSchema>;
 
