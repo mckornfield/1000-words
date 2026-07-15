@@ -60,7 +60,13 @@ export interface ParsedRoute {
  * If the path doesn't match any known route, returns "/login".
  */
 export function parseRoute(): ParsedRoute {
-  const rawPathname = window.location.pathname;
+  // Strip the Vite base path (e.g. '/1000-words') so the router sees clean paths
+  // regardless of whether the app is hosted at the root or a sub-path.
+  const base = import.meta.env.BASE_URL.replace(/\/$/, ""); // '' or '/1000-words'
+  const fullPathname = window.location.pathname;
+  const rawPathname = base && fullPathname.startsWith(base)
+    ? fullPathname.slice(base.length) || "/"
+    : fullPathname;
   const rawSegments = rawPathname.split("/").filter(Boolean);
   // Use lowercase only for structural matching, not for parameter values
   const segments = rawSegments.map((s) => s.toLowerCase());
