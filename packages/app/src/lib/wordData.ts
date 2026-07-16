@@ -29,7 +29,7 @@ export async function loadAllWords(langPair = "en-es"): Promise<WordEntry[]> {
   if (_cache.has(langPair)) return _cache.get(langPair)!;
   if (_promises.has(langPair)) return _promises.get(langPair)!;
 
-  const promise = fetch(`/assets/data/${langPair}.json`)
+  const promise = fetch(`${import.meta.env.BASE_URL}assets/data/${langPair}.json`)
     .then((r) => {
       if (!r.ok) throw new Error(`Failed to fetch word data for ${langPair}: ${r.status}`);
       return r.json() as Promise<WordEntry[]>;
