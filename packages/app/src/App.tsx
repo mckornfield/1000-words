@@ -149,6 +149,13 @@ export function App() {
     };
   }, [session, dashboardData, isDemo]);
 
+  async function signUp(email: string, password: string): Promise<void> {
+    setDataError(null);
+    const s = await supabaseAuthRepo.signUp(email, password);
+    setSession(s);
+    navigate("/dashboard");
+  }
+
   async function signIn(email: string, password: string): Promise<void> {
     setDataError(null);
     if (isDemo) {
@@ -173,7 +180,7 @@ export function App() {
   if (!authReady) return null;
 
   if (!session || currentRoute.path === "/login") {
-    return <LoginPage config={appConfig} onSignIn={signIn} />;
+    return <LoginPage config={appConfig} onSignIn={signIn} onSignUp={isDemo ? undefined : signUp} />;
   }
 
   if (dataError) {
@@ -189,7 +196,7 @@ export function App() {
   }
 
   if (!dashboardData || !appContextValue) {
-    return <LoginPage config={appConfig} onSignIn={signIn} />;
+    return <LoginPage config={appConfig} onSignIn={signIn} onSignUp={isDemo ? undefined : signUp} />;
   }
 
   const hideNav = currentRoute.path === "/study/:langPair" || currentRoute.path === "/lessons/:lessonId/study";

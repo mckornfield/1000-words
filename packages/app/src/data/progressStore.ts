@@ -41,6 +41,8 @@ function langPairFromCardId(cardId: string): LangPair {
   const target = cardId.split("-")[0];
   if (target === "es") return "en-es";
   if (target === "zh") return "en-zh";
+  if (target === "ko") return "en-ko";
+  if (target === "ja") return "en-ja";
   throw new Error(`Cannot derive langPair from card id: ${cardId}`);
 }
 

@@ -9,6 +9,7 @@ export interface AuthSession {
 
 export interface AuthRepository {
   getSession(): Promise<AuthSession | null>;
+  signUp(email: string, password: string): Promise<AuthSession>;
   signIn(email: string, password: string): Promise<AuthSession>;
   signOut(): Promise<void>;
   onAuthChange(cb: (session: AuthSession | null) => void): () => void;
