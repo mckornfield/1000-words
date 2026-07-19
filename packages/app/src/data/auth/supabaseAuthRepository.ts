@@ -9,6 +9,11 @@ export function createSupabaseAuthRepository(): AuthRepository {
       return { userId: s.user.id, email: s.user.email! };
     },
 
+    async signUp(email, password) {
+      const user = await authLib.signUp(email, password);
+      return { userId: user.id, email: user.email! };
+    },
+
     async signIn(email, password) {
       const s = await authLib.signIn(email, password);
       return { userId: s.user.id, email: s.user.email! };

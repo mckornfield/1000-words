@@ -3,14 +3,6 @@
 # migrations under supabase/migrations/ — they are the source of truth.
 project_id = "1000-words"
 
-[app]
-demoLogin = true
-host = "127.0.0.1"
-port = 8080
-base_url = "http://localhost:8080"
-login_path = "/login"
-dashboard_path = "/dashboard"
-
 [api]
 enabled = true
 port = 54321

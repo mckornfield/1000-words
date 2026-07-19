@@ -350,6 +350,17 @@ button:disabled {
 	font-weight: 600;
 }
 
+.link-button {
+	background: none;
+	border: none;
+	padding: 0;
+	color: var(--fg);
+	font-size: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: underline;
+}
+
 /* ─────────────────────────────────────────
    Dashboard shell
 ───────────────────────────────────────── */
