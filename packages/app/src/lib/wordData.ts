@@ -105,3 +105,12 @@ export async function loadWordsForLessonId(
 export async function loadWordsForLangPair(langPair: string): Promise<WordEntry[]> {
   return loadAllWords(langPair);
 }
+
+/**
+ * Resolve a card's relative audio path against BASE_URL.
+ * Needed because history-based routes (e.g. /study/en-es) aren't at the
+ * document root, so a bare relative path resolves incorrectly.
+ */
+export function audioUrl(entry: Pick<WordEntry, "audio">): string {
+  return `${import.meta.env.BASE_URL}${entry.audio}`;
+}

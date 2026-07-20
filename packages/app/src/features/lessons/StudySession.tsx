@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { navigate } from "../../lib/router";
 import type { DashboardData } from "../../data/account/repository";
-import { loadWordsForLangPair, type WordEntry } from "../../lib/wordData";
+import { loadWordsForLangPair, audioUrl, type WordEntry } from "../../lib/wordData";
 import { useToast } from "../shared/Toast";
 import { useAppContext } from "../../data/AppContext";
 import { buildSession, scheduleReview, initialState } from "@1000words/engine";
@@ -118,6 +118,7 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
 
   const progressRef = useRef<Record<string, import("@1000words/engine").FsrsState>>({});
   const startTimesRef = useRef<Record<string, number>>({});
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     setIsLoading(true);
@@ -155,6 +156,16 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
   const totalCards  = cards.length;
   const progress    = totalCards > 0 ? (cardIndex / totalCards) * 100 : 0;
   const maxXp       = totalCards * 15;
+
+  const playCardAudio = () => {
+    if (!currentCard?.audio || !audioRef.current) return;
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
+  };
+
+  useEffect(() => {
+    if (isFlipped) playCardAudio();
+  }, [isFlipped, currentCard?.id]);
 
   const handleRating = (rating: Rating) => {
     if (!currentCard) return;
@@ -315,7 +326,18 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
             </div>
             <div className="flashcard-face flashcard-back">
               <span className="flashcard-pos">{currentCard.partOfSpeech}</span>
-              <div className="flashcard-word" style={{ color: "var(--accent)" }}>{currentCard.word}</div>
+              <div className="flashcard-word" style={{ color: "var(--accent)" }}>
+                {currentCard.word}
+                {currentCard.audio && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); playCardAudio(); }}
+                    aria-label="Replay pronunciation"
+                    style={{ background: "transparent", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: "0.7em", padding: "0 0 0 0.4em", minWidth: "auto", verticalAlign: "middle" }}
+                  >
+                    🔊
+                  </button>
+                )}
+              </div>
               {currentCard.pronunciation && (
                 <div style={{ fontSize: "1rem", color: "var(--text-secondary)", marginBottom: "0.25rem", fontStyle: "italic" }}>
                   {currentCard.pronunciation}
@@ -331,6 +353,8 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
             </div>
           </div>
         </div>
+
+        {currentCard.audio && <audio ref={audioRef} src={audioUrl(currentCard)} preload="none" />}
 
         {isFlipped ? (
           <div className="study-rating-row" role="group" aria-label="Rate this card">
