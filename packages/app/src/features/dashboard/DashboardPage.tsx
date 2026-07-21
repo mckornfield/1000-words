@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import type { DashboardData } from "../../data/account/repository";
 import { navigate } from "../../lib/router";
+import { FireIcon, GearIcon, FLAG_ICONS } from "../shared/icons";
 
 interface DashboardPageProps {
   dashboardData: DashboardData;
@@ -9,10 +10,10 @@ interface DashboardPageProps {
 }
 
 const STUDY_LANGUAGES = [
-  { langPair: "en-es", label: "Study Spanish", flag: "🇪🇸" },
-  { langPair: "en-zh", label: "Study Mandarin", flag: "🇨🇳" },
-  { langPair: "en-ko", label: "Study Korean", flag: "🇰🇷" },
-  { langPair: "en-ja", label: "Study Japanese", flag: "🇯🇵" },
+  { langPair: "en-es", label: "Study Spanish" },
+  { langPair: "en-zh", label: "Study Mandarin" },
+  { langPair: "en-ko", label: "Study Korean" },
+  { langPair: "en-ja", label: "Study Japanese" },
 ];
 
 function goalStatusBadge(status: string): string {
@@ -44,7 +45,7 @@ export function DashboardPage({ dashboardData, avatarSrc, onSignOut }: Dashboard
               style={{ background: "var(--surface-raised)", color: "var(--text-secondary)", border: "1px solid var(--border)" }}
               aria-label="Settings"
             >
-              ⚙
+              <GearIcon />
             </button>
             <button onClick={onSignOut}>Sign Out</button>
           </div>
@@ -68,7 +69,7 @@ export function DashboardPage({ dashboardData, avatarSrc, onSignOut }: Dashboard
             <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>{profile.bio}</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexShrink: 0 }}>
-            <span aria-hidden="true">🔥</span>
+            <FireIcon />
             <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>{profile.streakDays}</span>
             <span style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>day streak</span>
           </div>
@@ -96,29 +97,32 @@ export function DashboardPage({ dashboardData, avatarSrc, onSignOut }: Dashboard
 
         {/* Study CTAs */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "1rem" }}>
-          {STUDY_LANGUAGES.map(({ langPair, label, flag }) => (
-            <button
-              key={langPair}
-              onClick={() => navigate("/study/:langPair", { langPair })}
-              style={{
-                padding: "0.9rem 0.5rem",
-                fontSize: "0.95rem",
-                fontWeight: 800,
-                background: "var(--accent)",
-                color: "#fff",
-                border: "none",
-                borderRadius: "var(--radius-sm)",
-                cursor: "pointer",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                gap: "0.25rem",
-              }}
-            >
-              <span style={{ fontSize: "1.5rem" }}>{flag}</span>
-              {label}
-            </button>
-          ))}
+          {STUDY_LANGUAGES.map(({ langPair, label }) => {
+            const Flag = FLAG_ICONS[langPair]!;
+            return (
+              <button
+                key={langPair}
+                onClick={() => navigate("/study/:langPair", { langPair })}
+                style={{
+                  padding: "0.9rem 0.5rem",
+                  fontSize: "0.95rem",
+                  fontWeight: 800,
+                  background: "var(--accent)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "var(--radius-sm)",
+                  cursor: "pointer",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "0.25rem",
+                }}
+              >
+                <Flag size="1.75rem" style={{ borderRadius: "3px" }} />
+                {label}
+              </button>
+            );
+          })}
         </div>
 
         {/* Daily Goals */}

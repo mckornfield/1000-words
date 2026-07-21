@@ -1,4 +1,5 @@
 import { navigate, type RoutePath } from "../../lib/router";
+import { HomeIcon, TargetIcon, ShoppingBagIcon, PersonIcon, type IconComponent } from "./icons";
 
 interface NavBarProps {
   currentPath: RoutePath;
@@ -7,14 +8,14 @@ interface NavBarProps {
 interface NavItem {
   label: string;
   path: RoutePath;
-  icon: string;
+  icon: string | IconComponent;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Home",    path: "/dashboard",   icon: "⌂"  },
-  { label: "Goals",   path: "/objectives",  icon: "🎯" },
-  { label: "Shop",    path: "/shop",        icon: "🛍️" },
-  { label: "Profile", path: "/profile",     icon: "👤" },
+  { label: "Home",    path: "/dashboard",   icon: HomeIcon },
+  { label: "Goals",   path: "/objectives",  icon: TargetIcon },
+  { label: "Shop",    path: "/shop",        icon: ShoppingBagIcon },
+  { label: "Profile", path: "/profile",     icon: PersonIcon },
 ];
 
 /** Returns true if the current path is "within" the nav item's section. */
@@ -40,7 +41,9 @@ export function NavBar({ currentPath }: NavBarProps) {
             aria-label={item.label}
             aria-current={active ? "page" : undefined}
           >
-            <span className="nav-icon" aria-hidden="true">{item.icon}</span>
+            <span className="nav-icon" aria-hidden="true">
+              {typeof item.icon === "string" ? item.icon : <item.icon />}
+            </span>
             <span className="nav-label">{item.label}</span>
           </button>
         );

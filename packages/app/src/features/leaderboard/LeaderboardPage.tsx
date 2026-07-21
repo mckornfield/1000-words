@@ -3,6 +3,7 @@ import { navigate } from "../../lib/router";
 import { useAppContext } from "../../data/AppContext";
 import type { LeaderboardEntry } from "../../data/types";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
+import { TrophyIcon, GoldMedalIcon, SilverMedalIcon, BronzeMedalIcon } from "../shared/icons";
 import { useToast } from "../shared/Toast";
 import type { DashboardData, StoreItem } from "../../data/account/repository";
 
@@ -76,7 +77,7 @@ function LeaderboardRow({ entry, isCurrentUser, storeItems }: LeaderboardRowProp
     if (entry.rank === 1) {
       return (
         <>
-          <span aria-hidden="true">🥇</span>
+          <GoldMedalIcon />
           <span className="sr-only">Rank 1</span>
         </>
       );
@@ -84,7 +85,7 @@ function LeaderboardRow({ entry, isCurrentUser, storeItems }: LeaderboardRowProp
     if (entry.rank === 2) {
       return (
         <>
-          <span aria-hidden="true">🥈</span>
+          <SilverMedalIcon />
           <span className="sr-only">Rank 2</span>
         </>
       );
@@ -92,7 +93,7 @@ function LeaderboardRow({ entry, isCurrentUser, storeItems }: LeaderboardRowProp
     if (entry.rank === 3) {
       return (
         <>
-          <span aria-hidden="true">🥉</span>
+          <BronzeMedalIcon />
           <span className="sr-only">Rank 3</span>
         </>
       );
@@ -347,7 +348,7 @@ export function LeaderboardPage({ dashboardData }: { dashboardData: DashboardDat
           <div>{skeletonRows}</div>
         ) : entries.length === 0 ? (
           <div className="empty-state">
-            <span style={{ fontSize: "3rem", opacity: 0.6 }}>🏆</span>
+            <span style={{ opacity: 0.6 }}><TrophyIcon size="3rem" /></span>
             <h3>No rankings yet</h3>
             <p>Be the first to complete lessons and earn a spot.</p>
           </div>

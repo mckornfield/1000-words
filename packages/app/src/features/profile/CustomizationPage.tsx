@@ -1,6 +1,7 @@
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
 import { Breadcrumb } from "../shared/Breadcrumb";
+import { GiftIcon } from "../shared/icons";
 import type { DashboardData } from "../../data/account/repository";
 
 interface CustomizationPageProps {
@@ -95,7 +96,7 @@ export function CustomizationPage({ dashboardData, avatarSrc }: CustomizationPag
 
         {ownedItems.length === 0 && (
           <div className="bento-cell" style={{ marginBottom: "1.5rem", background: "var(--status-muted-bg)", textAlign: "center", padding: "2rem" }}>
-            <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>🎁</div>
+            <div style={{ marginBottom: "1rem" }}><GiftIcon size="2rem" /></div>
             <h3 style={{ marginTop: 0 }}>No Customizations Yet</h3>
             <p style={{ margin: "0 0 1rem 0", color: "var(--text-secondary)" }}>
               Visit the shop to purchase cosmetics for your profile.

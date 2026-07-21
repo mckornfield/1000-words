@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
 import { Breadcrumb } from "../shared/Breadcrumb";
+import { HourglassIcon, HalfProgressIcon, LockedIcon, PartyIcon } from "../shared/icons";
 import type { DashboardData } from "../../data/account/repository";
 import { useAppContext } from "../../data/AppContext";
 import type { UserAchievement } from "../../data/types";
@@ -115,6 +116,9 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
                 style={{
                   fontSize: "1.2rem",
                   fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.35em",
                   color:
                     liveStatus === "completed"
                       ? "var(--status-ok)"
@@ -126,8 +130,8 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
                 {liveStatus === "completed"
                   ? "✓ Unlocked"
                   : liveStatus === "in_progress"
-                    ? "◐ In Progress"
-                    : "🔒 Locked"}
+                    ? <><HalfProgressIcon /> In Progress</>
+                    : <><LockedIcon /> Locked</>}
               </div>
             </div>
             <div>
@@ -152,7 +156,7 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <div style={{ fontSize: "1.5rem" }}>{prereqEarned ? "✓" : "🔒"}</div>
+              <div style={{ fontSize: "1.5rem" }}>{prereqEarned ? "✓" : <LockedIcon size="1.5rem" />}</div>
               <div>
                 <div style={{ fontWeight: 700, color: prereqEarned ? "var(--status-ok)" : "var(--text-secondary)" }}>
                   {prereqEarned ? "Prerequisite met" : "Prerequisite required"}
@@ -172,7 +176,7 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
           <div className="bento-cell" style={{ marginBottom: "1.5rem" }}>
             <h2 style={{ marginTop: 0 }}>Unlocked</h2>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <div style={{ fontSize: "2rem" }}>🎉</div>
+              <div><PartyIcon size="2rem" /></div>
               <div>
                 <div style={{ fontWeight: 700 }}>Achievement Unlocked!</div>
                 <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
@@ -187,7 +191,7 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
           <div className="bento-cell" style={{ marginBottom: "1.5rem", background: "var(--status-warn-bg)" }}>
             <h2 style={{ marginTop: 0 }}>In Progress</h2>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <div style={{ fontSize: "2rem" }}>⏳</div>
+              <div><HourglassIcon size="2rem" /></div>
               <div>
                 <div style={{ fontWeight: 700 }}>Keep working on this!</div>
                 <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
@@ -202,7 +206,7 @@ export function AchievementDetail({ dashboardData, achievementId }: AchievementD
           <div className="bento-cell" style={{ marginBottom: "1.5rem", background: "var(--status-muted-bg)" }}>
             <h2 style={{ marginTop: 0 }}>Locked</h2>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <div style={{ fontSize: "2rem" }}>🔒</div>
+              <div><LockedIcon size="2rem" /></div>
               <div>
                 <div style={{ fontWeight: 700 }}>Complete the requirements to unlock</div>
                 <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>

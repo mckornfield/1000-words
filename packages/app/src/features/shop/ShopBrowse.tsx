@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
+import { CoinIcon, LockedIcon } from "../shared/icons";
 import type { DashboardData } from "../../data/account/repository";
 import { useAppContext } from "../../data/AppContext";
 import type { UserAchievement } from "../../data/types";
@@ -63,7 +64,7 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
               <div style={{ fontSize: "0.9rem", opacity: 0.9 }}>Your Token Balance</div>
               <div style={{ fontSize: "2rem", fontWeight: 700 }}>{userTokens.toLocaleString()}</div>
             </div>
-            <div style={{ fontSize: "3rem" }}>🪙</div>
+            <div><CoinIcon size="3rem" /></div>
           </div>
         </div>
 
@@ -182,7 +183,7 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
                       borderRadius: "var(--radius)",
                     }}
                   >
-                    <span style={{ fontSize: "1.5rem" }}>🔒</span>
+                    <LockedIcon size="1.5rem" />
                     <span style={{ color: "#fff", fontSize: "0.75rem", fontWeight: 600, textAlign: "center", padding: "0 0.75rem" }}>
                       Achievement required
                     </span>
@@ -229,8 +230,8 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
                     borderTop: "1px solid var(--border-subtle)",
                   }}
                 >
-                  <div style={{ fontSize: "0.9rem", fontWeight: 700, color: canAfford ? "var(--accent)" : "var(--muted)" }}>
-                    {item.tokenCost} 🪙
+                  <div style={{ fontSize: "0.9rem", fontWeight: 700, color: canAfford ? "var(--accent)" : "var(--muted)", display: "flex", alignItems: "center", gap: "0.3em" }}>
+                    {item.tokenCost} <CoinIcon size="0.9em" />
                   </div>
                   {item.isOwned ? (
                     <span style={{ padding: "0.3rem 0.75rem", borderRadius: "var(--radius-sm)", fontSize: "0.7rem", fontWeight: 700, background: "var(--status-ok-bg)", color: "var(--status-ok)" }}>
@@ -238,7 +239,7 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
                     </span>
                   ) : isAchLocked ? (
                     <span style={{ padding: "0.3rem 0.75rem", borderRadius: "var(--radius-sm)", fontSize: "0.7rem", fontWeight: 700, background: "var(--status-muted-bg)", color: "var(--status-muted)" }}>
-                      🔒 Locked
+                      <LockedIcon size="0.9em" /> Locked
                     </span>
                   ) : canAfford ? (
                     <span style={{ padding: "0.3rem 0.75rem", borderRadius: "var(--radius-sm)", fontSize: "0.7rem", fontWeight: 700, background: "var(--accent)", color: "#fff" }}>

@@ -8,6 +8,7 @@ import { buildSession, scheduleReview, initialState } from "@1000words/engine";
 import type { Card } from "@1000words/content";
 import type { Rating } from "@1000words/engine";
 import { checkAchievements } from "../../lib/achievementEngine";
+import { TrophyIcon, StarIcon, BookIcon, SpinnerIcon, SpeakerIcon } from "../shared/icons";
 
 interface StudySessionProps {
   dashboardData: DashboardData;
@@ -48,7 +49,7 @@ function SessionComplete({
   return (
     <div className="session-complete">
       <div className="session-trophy">
-        {accuracy === 100 ? "🏆" : accuracy >= 70 ? "⭐" : "📚"}
+        {accuracy === 100 ? <TrophyIcon size="5rem" /> : accuracy >= 70 ? <StarIcon size="5rem" /> : <BookIcon size="5rem" />}
       </div>
       <div>
         <h1 style={{ margin: "0 0 0.3rem", fontSize: "1.8rem", fontWeight: 800, letterSpacing: "-0.02em" }}>
@@ -226,7 +227,7 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
       })();
 
       showXp(earnedXp, `${sessionTitle} session complete`);
-      if (accuracy === 100) showSuccess("Perfect score!", "You aced every card 🎉");
+      if (accuracy === 100) showSuccess("Perfect score!", "You aced every card!");
       setIsDone(true);
     } else {
       const nextCard = cards[cardIndex + 1];
@@ -281,7 +282,7 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
     return (
       <div className="study-screen page-enter" style={{ alignItems: "center", justifyContent: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--muted)", fontSize: "1rem" }}>
-          <span style={{ animation: "rotateFull 1s linear infinite", display: "inline-block" }}>⟳</span>
+          <span style={{ animation: "rotateFull 1s linear infinite", display: "inline-block" }}><SpinnerIcon /></span>
           Loading cards…
         </div>
       </div>
@@ -332,9 +333,9 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
                   <button
                     onClick={(e) => { e.stopPropagation(); playCardAudio(); }}
                     aria-label="Replay pronunciation"
-                    style={{ background: "transparent", border: "none", color: "var(--accent)", cursor: "pointer", fontSize: "0.7em", padding: "0 0 0 0.4em", minWidth: "auto", verticalAlign: "middle" }}
+                    style={{ background: "transparent", border: "none", color: "var(--accent)", cursor: "pointer", padding: "0 0 0 0.4em", minWidth: "auto", verticalAlign: "middle" }}
                   >
-                    🔊
+                    <SpeakerIcon size="0.7em" />
                   </button>
                 )}
               </div>
