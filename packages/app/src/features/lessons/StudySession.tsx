@@ -8,7 +8,9 @@ import { buildSession, scheduleReview, initialState } from "@1000words/engine";
 import type { Card } from "@1000words/content";
 import type { Rating } from "@1000words/engine";
 import { checkAchievements } from "../../lib/achievementEngine";
-import { TrophyIcon, StarIcon, BookIcon, SpinnerIcon, SpeakerIcon } from "../shared/icons";
+import { TrophyIcon, StarIcon, BookIcon, SpinnerIcon, SpeakerIcon, MicIcon } from "../shared/icons";
+import { isSpeechRecognitionSupported, recognizeSpeech } from "../../lib/speechRecognition";
+import { isCloseMatch } from "../../lib/pronunciationScore";
 
 interface StudySessionProps {
   dashboardData: DashboardData;
@@ -121,6 +123,10 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
   const startTimesRef = useRef<Record<string, number>>({});
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  const [micState, setMicState] = useState<"idle" | "listening" | "match" | "no-match" | "error">("idle");
+  const micResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const speechSupported = useRef(isSpeechRecognitionSupported()).current;
+
   useEffect(() => {
     setIsLoading(true);
     loadWordsForLangPair(langPair)
@@ -167,6 +173,26 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
   useEffect(() => {
     if (isFlipped) playCardAudio();
   }, [isFlipped, currentCard?.id]);
+
+  useEffect(() => {
+    setMicState("idle");
+    if (micResetRef.current) clearTimeout(micResetRef.current);
+  }, [currentCard?.id]);
+
+  const handleMicPress = async () => {
+    if (!currentCard || micState === "listening") return;
+    if (micResetRef.current) clearTimeout(micResetRef.current);
+    setMicState("listening");
+    try {
+      const transcript = await recognizeSpeech(langPair);
+      const matched = isCloseMatch(transcript, currentCard.word);
+      setMicState(matched ? "match" : "no-match");
+    } catch (err) {
+      console.warn("[StudySession] Speech recognition failed:", err);
+      setMicState("error");
+    }
+    micResetRef.current = setTimeout(() => setMicState("idle"), 2500);
+  };
 
   const handleRating = (rating: Rating) => {
     if (!currentCard) return;
@@ -337,6 +363,32 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
                   >
                     <SpeakerIcon size="0.7em" />
                   </button>
+                )}
+                {speechSupported && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleMicPress(); }}
+                    disabled={micState === "listening"}
+                    aria-label="Practice saying this word"
+                    style={{
+                      background: "transparent", border: "none", padding: "0 0 0 0.3em", minWidth: "auto", verticalAlign: "middle",
+                      color: micState === "listening" ? "var(--status-warn)" : "var(--accent)",
+                      cursor: micState === "listening" ? "default" : "pointer",
+                    }}
+                  >
+                    <MicIcon size="0.7em" />
+                  </button>
+                )}
+                {micState === "listening" && (
+                  <SpinnerIcon size="0.6em" style={{ marginLeft: "0.2em", verticalAlign: "middle", animation: "rotateFull 1s linear infinite", color: "var(--status-warn)" }} />
+                )}
+                {micState === "match" && (
+                  <span style={{ color: "var(--status-ok)", fontSize: "0.6em", verticalAlign: "middle", marginLeft: "0.2em" }} aria-label="Good match">✓</span>
+                )}
+                {micState === "no-match" && (
+                  <span style={{ color: "#dc2626", fontSize: "0.6em", verticalAlign: "middle", marginLeft: "0.2em" }} aria-label="Didn't match, try again">✗</span>
+                )}
+                {micState === "error" && (
+                  <span style={{ color: "var(--status-muted)", fontSize: "0.6em", verticalAlign: "middle", marginLeft: "0.2em" }} aria-label="Couldn't access microphone or speech recognition">!</span>
                 )}
               </div>
               {currentCard.pronunciation && (
