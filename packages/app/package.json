@@ -11,18 +11,24 @@
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit",
     "cap:sync": "cap sync",
+    "cap:build": "pnpm build && pnpm cap:sync",
+    "cap:ios": "pnpm cap:build && cap open ios",
+    "cap:android": "pnpm cap:build && cap open android",
     "supabase:smoke": "tsx scripts/supabase-smoke.ts"
   },
   "dependencies": {
     "@1000words/content": "workspace:*",
     "@1000words/engine": "workspace:*",
+    "@capacitor/android": "^8.4.2",
     "@capacitor/core": "^8.4.0",
+    "@capacitor/ios": "^8.4.2",
     "@supabase/supabase-js": "^2.107.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.4.0",
     "@tailwindcss/vite": "^4.3.0",
     "@types/react": "^19.2.0",

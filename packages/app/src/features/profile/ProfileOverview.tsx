@@ -1,5 +1,6 @@
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
+import { GearIcon, CoinIcon } from "../shared/icons";
 import type { DashboardData } from "../../data/account/repository";
 
 interface ProfileOverviewProps {
@@ -94,7 +95,7 @@ export function ProfileOverview({ dashboardData, avatarSrc }: ProfileOverviewPro
                     fontSize: "0.85rem",
                   }}
                 >
-                  ⚙ Settings
+                  <GearIcon size="0.9em" /> Settings
                 </button>
               </div>
             </div>
@@ -140,7 +141,7 @@ export function ProfileOverview({ dashboardData, avatarSrc }: ProfileOverviewPro
               <div style={{ fontSize: "1.8rem", fontWeight: 700, color: "#f59e0b" }}>
                 {profile.tokens.toLocaleString()}
               </div>
-              <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>🪙 Tokens</div>
+              <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.3em" }}><CoinIcon size="0.9em" /> Tokens</div>
             </div>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: "1.8rem", fontWeight: 700, color: "var(--accent)" }}>

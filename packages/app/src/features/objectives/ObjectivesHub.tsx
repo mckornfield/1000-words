@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { navigate } from "../../lib/router";
 import type { DashboardData } from "../../data/account/repository";
+import { HalfProgressIcon } from "../shared/icons";
 
 interface ObjectivesHubProps {
   dashboardData: DashboardData;
@@ -111,7 +112,11 @@ export function ObjectivesHub({ dashboardData }: ObjectivesHubProps) {
                               : "var(--status-muted)",
                       }}
                     >
-                      {goal.status === "completed" ? "✓ Done" : goal.status === "in_progress" ? "◐ Active" : "Upcoming"}
+                      {goal.status === "completed"
+                        ? "✓ Done"
+                        : goal.status === "in_progress"
+                          ? <><HalfProgressIcon size="0.9em" /> Active</>
+                          : "Upcoming"}
                     </div>
                   </div>
                   <div style={{ marginBottom: "0.5rem" }}>

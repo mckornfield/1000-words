@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { navigate } from "../../lib/router";
 import type { DashboardData } from "../../data/account/repository";
-import { loadWordsForLangPair, type WordEntry } from "../../lib/wordData";
+import { loadWordsForLangPair, audioUrl, type WordEntry } from "../../lib/wordData";
 import { useToast } from "../shared/Toast";
 import { useAppContext } from "../../data/AppContext";
 import { buildSession, scheduleReview, initialState } from "@1000words/engine";
 import type { Card } from "@1000words/content";
 import type { Rating } from "@1000words/engine";
 import { checkAchievements } from "../../lib/achievementEngine";
+import { TrophyIcon, StarIcon, BookIcon, SpinnerIcon, SpeakerIcon } from "../shared/icons";
 
 interface StudySessionProps {
   dashboardData: DashboardData;
@@ -48,7 +49,7 @@ function SessionComplete({
   return (
     <div className="session-complete">
       <div className="session-trophy">
-        {accuracy === 100 ? "🏆" : accuracy >= 70 ? "⭐" : "📚"}
+        {accuracy === 100 ? <TrophyIcon size="5rem" /> : accuracy >= 70 ? <StarIcon size="5rem" /> : <BookIcon size="5rem" />}
       </div>
       <div>
         <h1 style={{ margin: "0 0 0.3rem", fontSize: "1.8rem", fontWeight: 800, letterSpacing: "-0.02em" }}>
@@ -118,6 +119,7 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
 
   const progressRef = useRef<Record<string, import("@1000words/engine").FsrsState>>({});
   const startTimesRef = useRef<Record<string, number>>({});
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     setIsLoading(true);
@@ -155,6 +157,16 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
   const totalCards  = cards.length;
   const progress    = totalCards > 0 ? (cardIndex / totalCards) * 100 : 0;
   const maxXp       = totalCards * 15;
+
+  const playCardAudio = () => {
+    if (!currentCard?.audio || !audioRef.current) return;
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
+  };
+
+  useEffect(() => {
+    if (isFlipped) playCardAudio();
+  }, [isFlipped, currentCard?.id]);
 
   const handleRating = (rating: Rating) => {
     if (!currentCard) return;
@@ -215,7 +227,7 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
       })();
 
       showXp(earnedXp, `${sessionTitle} session complete`);
-      if (accuracy === 100) showSuccess("Perfect score!", "You aced every card 🎉");
+      if (accuracy === 100) showSuccess("Perfect score!", "You aced every card!");
       setIsDone(true);
     } else {
       const nextCard = cards[cardIndex + 1];
@@ -270,7 +282,7 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
     return (
       <div className="study-screen page-enter" style={{ alignItems: "center", justifyContent: "center" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--muted)", fontSize: "1rem" }}>
-          <span style={{ animation: "rotateFull 1s linear infinite", display: "inline-block" }}>⟳</span>
+          <span style={{ animation: "rotateFull 1s linear infinite", display: "inline-block" }}><SpinnerIcon /></span>
           Loading cards…
         </div>
       </div>
@@ -315,7 +327,18 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
             </div>
             <div className="flashcard-face flashcard-back">
               <span className="flashcard-pos">{currentCard.partOfSpeech}</span>
-              <div className="flashcard-word" style={{ color: "var(--accent)" }}>{currentCard.word}</div>
+              <div className="flashcard-word" style={{ color: "var(--accent)" }}>
+                {currentCard.word}
+                {currentCard.audio && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); playCardAudio(); }}
+                    aria-label="Replay pronunciation"
+                    style={{ background: "transparent", border: "none", color: "var(--accent)", cursor: "pointer", padding: "0 0 0 0.4em", minWidth: "auto", verticalAlign: "middle" }}
+                  >
+                    <SpeakerIcon size="0.7em" />
+                  </button>
+                )}
+              </div>
               {currentCard.pronunciation && (
                 <div style={{ fontSize: "1rem", color: "var(--text-secondary)", marginBottom: "0.25rem", fontStyle: "italic" }}>
                   {currentCard.pronunciation}
@@ -331,6 +354,8 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
             </div>
           </div>
         </div>
+
+        {currentCard.audio && <audio ref={audioRef} src={audioUrl(currentCard)} preload="none" />}
 
         {isFlipped ? (
           <div className="study-rating-row" role="group" aria-label="Rate this card">

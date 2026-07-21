@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
+import { LockedIcon, HalfProgressIcon } from "../shared/icons";
 import type { DashboardData } from "../../data/account/repository";
 import { useAppContext } from "../../data/AppContext";
 import type { UserAchievement } from "../../data/types";
@@ -190,7 +191,7 @@ export function AchievementsGallery({ dashboardData }: AchievementsGalleryProps)
                       gap: "0.25rem",
                     }}
                   >
-                    <span style={{ fontSize: "1.5rem" }}>🔒</span>
+                    <LockedIcon size="1.5rem" />
                     {prereq && (
                       <span style={{ color: "#fff", fontWeight: 600, fontSize: "0.75rem", textAlign: "center", padding: "0 0.5rem" }}>
                         Earn {prereq.title} first
@@ -250,7 +251,11 @@ export function AchievementsGallery({ dashboardData }: AchievementsGalleryProps)
                             : "var(--status-muted)",
                     }}
                   >
-                    {isCompleted ? "✓ Unlocked" : achievement.liveStatus === "in_progress" ? "◐ In Progress" : "Locked"}
+                    {isCompleted
+                      ? "✓ Unlocked"
+                      : achievement.liveStatus === "in_progress"
+                        ? <><HalfProgressIcon size="0.9em" /> In Progress</>
+                        : "Locked"}
                   </span>
                 </div>
 

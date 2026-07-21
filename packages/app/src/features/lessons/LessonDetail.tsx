@@ -3,6 +3,7 @@ import { navigate } from "../../lib/router";
 import type { DashboardData } from "../../data/account/repository";
 import { loadWordsForLessonId, type WordEntry } from "../../lib/wordData";
 import { Breadcrumb } from "../shared/Breadcrumb";
+import { BookIcon, HalfProgressIcon, LockedIcon } from "../shared/icons";
 
 interface LessonDetailProps {
   dashboardData: DashboardData;
@@ -75,7 +76,7 @@ export function LessonDetail({ dashboardData, lessonId }: LessonDetailProps) {
               </div>
             </div>
             <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "4rem", marginBottom: "1rem" }}>📚</div>
+              <div style={{ marginBottom: "1rem" }}><BookIcon size="4rem" /></div>
               <button
                 onClick={() => navigate("/lessons/:lessonId/study", { lessonId })}
                 style={{
@@ -134,12 +135,12 @@ export function LessonDetail({ dashboardData, lessonId }: LessonDetailProps) {
               <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
                 Status
               </div>
-              <div style={{ fontSize: "1.2rem", fontWeight: 700 }}>
+              <div style={{ fontSize: "1.2rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.35em" }}>
                 {lesson.status === "completed"
                   ? "✓ Complete"
                   : lesson.status === "in_progress"
-                    ? "◐ In Progress"
-                    : "⊖ Locked"}
+                    ? <><HalfProgressIcon /> In Progress</>
+                    : <><LockedIcon /> Locked</>}
               </div>
             </div>
             <div>

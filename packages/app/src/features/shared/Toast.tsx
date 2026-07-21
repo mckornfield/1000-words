@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
+import { StarIcon } from "./icons";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -9,7 +10,7 @@ export interface ToastMessage {
   type: ToastType;
   title: string;
   message?: string;
-  icon?: string;
+  icon?: ReactNode;
   durationMs?: number;
 }
 
@@ -50,7 +51,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       type: "xp",
       title: `+${amount} XP`,
       message: reason ?? "Keep it up!",
-      icon: "⭐",
+      icon: <StarIcon size="1.1em" />,
       durationMs: 3000,
     });
   }, [showToast]);

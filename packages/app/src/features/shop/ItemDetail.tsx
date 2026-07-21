@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
 import { Breadcrumb } from "../shared/Breadcrumb";
+import { HourglassIcon, CoinIcon, LockedIcon } from "../shared/icons";
 import type { DashboardData } from "../../data/account/repository";
 import { useToast } from "../shared/Toast";
 import { useAppContext } from "../../data/AppContext";
@@ -75,7 +76,7 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
       await inventoryRepo.purchase(userId, item.storeItemId, 0);
       setIsOwned(true);
       setUserTokens((prev) => prev - item.tokenCost);
-      showSuccess(`Purchased ${item.name}!`, `${item.tokenCost} 🪙 deducted from your balance.`);
+      showSuccess(`Purchased ${item.name}!`, `${item.tokenCost} tokens deducted from your balance.`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
       if (msg === "insufficient_tokens") {
@@ -148,12 +149,12 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
                 <div>
                   <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>PRICE</div>
                   <div style={{ fontSize: "1.8rem", fontWeight: 700, color: "var(--accent)" }}>{item.tokenCost}</div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>🪙 Tokens</div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.3em" }}><CoinIcon size="0.9em" /> Tokens</div>
                 </div>
                 <div>
                   <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>YOUR BALANCE</div>
                   <div style={{ fontSize: "1.8rem", fontWeight: 700, color: canAfford ? "var(--status-ok)" : "var(--status-warn)" }}>{userTokens}</div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>🪙 Tokens</div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.3em" }}><CoinIcon size="0.9em" /> Tokens</div>
                 </div>
               </div>
             </div>
@@ -162,7 +163,7 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
             {isAchLocked && requiredAch && (
               <div className="bento-cell" style={{ marginBottom: "1rem", background: "var(--status-muted-bg)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                  <div style={{ fontSize: "2rem" }}>🔒</div>
+                  <div><LockedIcon size="2rem" /></div>
                   <div>
                     <div style={{ fontWeight: 700 }}>Achievement Required</div>
                     <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
@@ -202,17 +203,17 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
                   disabled={busy}
                   style={{ width: "100%", padding: "1rem", borderRadius: "var(--radius)", background: "var(--accent)", color: "#fff", border: "none", cursor: busy ? "not-allowed" : "pointer", fontWeight: 700, fontSize: "1rem", opacity: busy ? 0.7 : 1 }}
                 >
-                  {busy ? "Purchasing…" : `Purchase for ${item.tokenCost} 🪙`}
+                  {busy ? "Purchasing…" : <>Purchase for {item.tokenCost} <CoinIcon size="0.9em" /></>}
                 </button>
               </div>
             ) : (
               <div className="bento-cell" style={{ marginBottom: "1rem", background: "var(--status-warn-bg)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "1rem", color: "var(--status-warn)" }}>
-                  <div style={{ fontSize: "2rem" }}>⏳</div>
+                  <div><HourglassIcon size="2rem" /></div>
                   <div>
                     <div style={{ fontWeight: 700 }}>Insufficient Tokens</div>
-                    <div style={{ fontSize: "0.85rem" }}>
-                      You need {item.tokenCost - userTokens} more 🪙 to purchase this item.
+                    <div style={{ fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.3em", flexWrap: "wrap" }}>
+                      You need {item.tokenCost - userTokens} more <CoinIcon size="0.9em" /> to purchase this item.
                     </div>
                   </div>
                 </div>
@@ -237,7 +238,7 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
                     {isOwned ? (
                       <span style={{ color: "var(--status-ok)" }}>✓ Owned</span>
                     ) : isAchLocked ? (
-                      <span style={{ color: "var(--muted)" }}>🔒 Achievement locked</span>
+                      <span style={{ color: "var(--muted)", display: "inline-flex", alignItems: "center", gap: "0.3em" }}><LockedIcon size="0.9em" /> Achievement locked</span>
                     ) : canAfford ? (
                       <span style={{ color: "var(--accent)" }}>Available</span>
                     ) : (
