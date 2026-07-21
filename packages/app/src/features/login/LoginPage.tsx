@@ -78,7 +78,9 @@ export function LoginPage({ config, onSignIn, onSignUp }: LoginPageProps) {
           <label>
             Email
             <input
-              type="email"
+              // Demo mode seeds a literal "demo" (not a real email address) — type="email"'s
+              // native format validation would silently block submission for that value.
+              type={config.demoLoginEnabled ? "text" : "email"}
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete={isSignUp ? "email" : "username"}
