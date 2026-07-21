@@ -227,6 +227,15 @@ export function SpeakerIcon({ size, style }: IconProps) {
   );
 }
 
+export function MicIcon({ size, style }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" style={baseStyle(size, style)} aria-hidden="true">
+      <rect x="9" y="2" width="6" height="12" rx="3" fill="currentColor" />
+      <path fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" d="M6 11a6 6 0 0 0 12 0M12 17v4M9 21h6" />
+    </svg>
+  );
+}
+
 export function SpinnerIcon({ size, style }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" style={baseStyle(size, style)} aria-hidden="true">
