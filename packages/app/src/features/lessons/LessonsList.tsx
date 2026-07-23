@@ -172,19 +172,10 @@ export function LessonsList({ dashboardData }: LessonsListProps) {
                       <p style={{ margin: "0 0 1rem 0", color: "var(--text-secondary)", fontSize: "0.9rem" }}>
                         {lesson.description}
                       </p>
-                      <div style={{ display: "grid", gap: "0.5rem", fontSize: "0.85rem", color: "var(--text-secondary)" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                          <span>Difficulty:</span>
-                          <strong>{lesson.difficulty.charAt(0).toUpperCase() + lesson.difficulty.slice(1)}</strong>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                          <span>Estimated:</span>
-                          <strong>{lesson.estimatedMinutes} min</strong>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between" }}>
-                          <span>Reward:</span>
-                          <strong>{lesson.xpReward} XP</strong>
-                        </div>
+                      <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>
+                        {lesson.difficulty.charAt(0).toUpperCase() + lesson.difficulty.slice(1)}
+                        {" · "}{lesson.estimatedMinutes} min{" · "}
+                        <strong style={{ color: "var(--text)" }}>{lesson.xpReward} XP</strong>
                       </div>
                       <div
                         style={{

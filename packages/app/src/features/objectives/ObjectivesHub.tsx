@@ -68,19 +68,18 @@ export function ObjectivesHub({ dashboardData }: ObjectivesHubProps) {
         {/* Daily Goals */}
         <div className="bento-cell" style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ marginTop: 0 }}>Today's Goals</h2>
-          <div style={{ display: "grid", gap: "1rem" }}>
-            {dailyGoals.map((goal) => {
+          <div>
+            {dailyGoals.map((goal, idx) => {
               const pct = Math.min(Math.round((goal.progress / goal.target) * 100), 100);
               const isExpanded = expandedGoal === goal.goalId;
               return (
                 <div
                   key={goal.goalId}
                   style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: "var(--radius)",
-                    padding: "1rem",
+                    padding: "1rem 0",
+                    borderTop: idx > 0 ? "1px solid var(--border-subtle)" : "none",
                     cursor: "pointer",
-                    transition: "all var(--t-base)",
+                    transition: "background var(--t-base)",
                   }}
                   onClick={() => setExpandedGoal(isExpanded ? null : goal.goalId)}
                   onMouseEnter={(e) => {
@@ -151,30 +150,21 @@ export function ObjectivesHub({ dashboardData }: ObjectivesHubProps) {
         {/* Milestones */}
         <div className="bento-cell" style={{ marginBottom: "1.5rem" }}>
           <h2 style={{ marginTop: 0 }}>Level Milestones</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem" }}>
+          <dl style={{ display: "grid", gap: "1rem", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
             {milestones.map((milestone) => (
-              <div
-                key={milestone.level}
-                style={{
-                  padding: "1.5rem",
-                  borderRadius: "var(--radius)",
-                  background: milestone.achieved ? "var(--status-ok-bg)" : "var(--surface-raised)",
-                  border: milestone.achieved ? "2px solid var(--status-ok)" : "1px solid var(--border)",
-                  textAlign: "center",
-                }}
-              >
-                <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
+              <div key={milestone.level}>
+                <dt style={{ fontSize: "0.85rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
                   Level {milestone.level}
-                </div>
-                <div style={{ fontSize: "1.8rem", fontWeight: 700, color: milestone.achieved ? "var(--status-ok)" : "var(--accent)" }}>
+                </dt>
+                <dd style={{ margin: 0, fontSize: "1.8rem", fontWeight: 700, color: milestone.achieved ? "var(--status-ok)" : "var(--accent)" }}>
                   {milestone.achieved ? "✓" : milestone.xp.toLocaleString()}
-                </div>
+                </dd>
                 <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "0.25rem" }}>
                   {milestone.achieved ? "Achieved" : "XP needed"}
                 </div>
               </div>
             ))}
-          </div>
+          </dl>
         </div>
 
         {/* Stats */}

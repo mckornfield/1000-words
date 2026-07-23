@@ -17,9 +17,12 @@ function dayLabel(isoDate: string): string {
   return DAY_LABELS[idx] ?? isoDate.slice(5);
 }
 
+const ACTIVITY_PAGE_SIZE = 5;
+
 export function StatsPage({ dashboardData }: StatsPageProps) {
   const { profile, lessons, achievements, activityTimeline } = dashboardData;
   const { statsRepo, userId } = useAppContext();
+  const [showAllActivity, setShowAllActivity] = useState(false);
 
   const lessonCount = lessons.filter((l) => l.status === "completed").length;
   const achievementCount = achievements.filter((a) => a.status === "completed").length;
@@ -108,30 +111,49 @@ export function StatsPage({ dashboardData }: StatsPageProps) {
         {/* Recent Activity */}
         <div className="bento-cell">
           <h2 style={{ marginTop: 0 }}>Recent Activity</h2>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {activityTimeline.map((event, idx) => (
-              <li
-                key={event.eventId}
-                style={{
-                  padding: "1rem",
-                  borderBottom: idx < activityTimeline.length - 1 ? "1px solid var(--border-subtle)" : "none",
-                  display: "flex",
-                  gap: "1rem",
-                  alignItems: "flex-start",
-                }}
-              >
-                <div style={{ fontSize: "1.5rem" }}>{event.icon}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700 }}>{event.title}</div>
-                  <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>{event.detail}</div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.25rem" }}>
-                    {new Date(event.timestamp).toLocaleDateString()} at{" "}
-                    {new Date(event.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {(() => {
+            const visible = showAllActivity ? activityTimeline : activityTimeline.slice(0, ACTIVITY_PAGE_SIZE);
+            return (
+              <>
+                <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                  {visible.map((event, idx) => (
+                    <li
+                      key={event.eventId}
+                      style={{
+                        padding: "1rem",
+                        borderBottom: idx < visible.length - 1 ? "1px solid var(--border-subtle)" : "none",
+                        display: "flex",
+                        gap: "1rem",
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      <div style={{ fontSize: "1.5rem" }}>{event.icon}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700 }}>{event.title}</div>
+                        <div style={{ fontSize: "0.85rem", color: "var(--text-secondary)" }}>{event.detail}</div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.25rem" }}>
+                          {new Date(event.timestamp).toLocaleDateString()} at{" "}
+                          {new Date(event.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+                {!showAllActivity && activityTimeline.length > ACTIVITY_PAGE_SIZE && (
+                  <button
+                    onClick={() => setShowAllActivity(true)}
+                    style={{
+                      width: "100%", marginTop: "0.75rem", padding: "0.7rem", borderRadius: "var(--radius-sm)",
+                      background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)",
+                      cursor: "pointer", fontWeight: 700, fontSize: "0.85rem",
+                    }}
+                  >
+                    Show {activityTimeline.length - ACTIVITY_PAGE_SIZE} more
+                  </button>
+                )}
+              </>
+            );
+          })()}
         </div>
 
         <div style={{ marginTop: "2rem" }}>

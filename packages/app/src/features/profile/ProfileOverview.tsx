@@ -199,37 +199,23 @@ export function ProfileOverview({ dashboardData, avatarSrc }: ProfileOverviewPro
           </dl>
         </div>
 
-        {/* Navigation Buttons */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "1rem", marginTop: "2rem" }}>
-          <button
-            onClick={() => navigate("/profile/stats")}
-            style={{
-              padding: "0.8rem 1.5rem",
-              borderRadius: "var(--radius)",
-              background: "var(--accent)",
-              color: "#fff",
-              border: "none",
-              cursor: "pointer",
-              fontWeight: 700,
-            }}
-          >
-            View Stats
-          </button>
-          <button
-            onClick={() => navigate("/dashboard")}
-            style={{
-              padding: "0.8rem 1.5rem",
-              borderRadius: "var(--radius)",
-              background: "var(--surface)",
-              color: "var(--text)",
-              border: "1px solid var(--border)",
-              cursor: "pointer",
-              fontWeight: 700,
-            }}
-          >
-            Back to Dashboard
-          </button>
-        </div>
+        {/* Navigation */}
+        <button
+          onClick={() => navigate("/dashboard")}
+          style={{
+            width: "100%",
+            padding: "0.8rem 1.5rem",
+            borderRadius: "var(--radius)",
+            background: "var(--surface)",
+            color: "var(--text)",
+            border: "1px solid var(--border)",
+            cursor: "pointer",
+            fontWeight: 700,
+            marginTop: "2rem",
+          }}
+        >
+          Back to Dashboard
+        </button>
       </div>
     </section>
   );

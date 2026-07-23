@@ -168,7 +168,9 @@ export function AchievementsGallery({ dashboardData }: AchievementsGalleryProps)
                   overflow: "hidden",
                   transition: "transform var(--t-base), box-shadow var(--t-base)",
                   opacity: isLocked ? 0.6 : 1,
+                  borderTop: `3px solid ${rarityColors[achievement.rarity] || "var(--muted)"}`,
                 }}
+                title={`${achievement.rarity.charAt(0).toUpperCase() + achievement.rarity.slice(1)} achievement`}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "translateY(-4px)";
                 }}
@@ -181,7 +183,9 @@ export function AchievementsGallery({ dashboardData }: AchievementsGalleryProps)
                     style={{
                       position: "absolute",
                       inset: 0,
-                      background: "rgba(0, 0, 0, 0.45)",
+                      // High opacity so the card's own title/description (still full-color underneath)
+                      // doesn't bleed through and collide with this overlay's text.
+                      background: "rgba(0, 0, 0, 0.88)",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
@@ -219,18 +223,6 @@ export function AchievementsGallery({ dashboardData }: AchievementsGalleryProps)
                 </p>
 
                 <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center", marginBottom: "0.75rem", flexWrap: "wrap" }}>
-                  <span
-                    style={{
-                      padding: "0.3rem 0.75rem",
-                      borderRadius: "var(--radius-sm)",
-                      fontSize: "0.7rem",
-                      fontWeight: 700,
-                      background: rarityColors[achievement.rarity] || "var(--muted)",
-                      color: "#fff",
-                    }}
-                  >
-                    {achievement.rarity.toUpperCase()}
-                  </span>
                   <span
                     style={{
                       padding: "0.3rem 0.75rem",
