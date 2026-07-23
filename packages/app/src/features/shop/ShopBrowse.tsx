@@ -173,7 +173,9 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
                     style={{
                       position: "absolute",
                       inset: 0,
-                      background: "rgba(0,0,0,0.45)",
+                      // High opacity so the card's own title/description (still full-color underneath)
+                      // doesn't bleed through and collide with this overlay's text.
+                      background: "rgba(0,0,0,0.88)",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
