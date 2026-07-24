@@ -50,9 +50,11 @@ export function ProfileOverview({ dashboardData, avatarSrc }: ProfileOverviewPro
             </div>
             <div>
               <h1 style={{ margin: "0 0 0.5rem 0" }}>{profile.displayName}</h1>
-              <p style={{ margin: "0 0 1rem 0", color: "var(--text-secondary)" }}>
-                {profile.bio}
-              </p>
+              {profile.bio && (
+                <p style={{ margin: "0 0 1rem 0", color: "var(--text-secondary)" }}>
+                  {profile.bio}
+                </p>
+              )}
               <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
                 <button
                   onClick={() => navigate("/profile/stats")}
@@ -110,10 +112,12 @@ export function ProfileOverview({ dashboardData, avatarSrc }: ProfileOverviewPro
               <dt style={{ fontWeight: 700, color: "var(--text-secondary)" }}>Email:</dt>
               <dd style={{ margin: 0 }}>{profile.email}</dd>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "120px 1fr" }}>
-              <dt style={{ fontWeight: 700, color: "var(--text-secondary)" }}>Phone:</dt>
-              <dd style={{ margin: 0 }}>{profile.phone}</dd>
-            </div>
+            {profile.phone && (
+              <div style={{ display: "grid", gridTemplateColumns: "120px 1fr" }}>
+                <dt style={{ fontWeight: 700, color: "var(--text-secondary)" }}>Phone:</dt>
+                <dd style={{ margin: 0 }}>{profile.phone}</dd>
+              </div>
+            )}
             <div style={{ display: "grid", gridTemplateColumns: "120px 1fr" }}>
               <dt style={{ fontWeight: 700, color: "var(--text-secondary)" }}>Timezone:</dt>
               <dd style={{ margin: 0 }}>{profile.timezone}</dd>

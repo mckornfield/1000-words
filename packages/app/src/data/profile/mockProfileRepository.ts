@@ -10,6 +10,7 @@ export function createMockProfileRepository(fixture: Profile): ProfileRepository
     tokens: fixture.tokens,
     streakCount: fixture.streakDays,
     lastActiveDate: fixture.lastActiveDate,
+    createdAt: fixture.joinedDate,
     settings: {
       themePreference: fixture.themePreference,
       dailyGoalMinutes: 15,

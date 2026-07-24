@@ -44,10 +44,12 @@ export function CustomizationPage({ dashboardData, avatarSrc }: CustomizationPag
               alt={profile.displayName}
               style={{ width: "120px", height: "120px", borderRadius: "var(--radius-lg)", marginBottom: "1rem", border: "3px solid var(--accent)" }}
             />
-            <h1 style={{ margin: "0 0 0.5rem 0" }}>{profile.displayName}</h1>
-            <p style={{ margin: "0", color: "var(--text-secondary)" }}>
-              {profile.bio}
-            </p>
+            <h1 style={{ margin: profile.bio ? "0 0 0.5rem 0" : 0 }}>{profile.displayName}</h1>
+            {profile.bio && (
+              <p style={{ margin: 0, color: "var(--text-secondary)" }}>
+                {profile.bio}
+              </p>
+            )}
           </div>
         </div>
 
