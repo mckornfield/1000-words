@@ -172,9 +172,16 @@ export function navigate(route: RoutePath, params: RouteParams = {}): void {
     pathname = pathname.replace(":objectiveId", params.objectiveId);
   }
 
-  if (window.location.pathname === pathname) return;
+  // Re-add the Vite base path (e.g. '/1000-words') that parseRoute() strips off
+  // when reading the URL — without this, pushState writes a path that's only
+  // valid at the domain root, breaking on reload/bookmark/share once deployed
+  // under a sub-path (GitHub Pages).
+  const base = import.meta.env.BASE_URL.replace(/\/$/, ""); // '' or '/1000-words'
+  const fullPathname = base + pathname;
 
-  window.history.pushState({}, "", pathname);
+  if (window.location.pathname === fullPathname) return;
+
+  window.history.pushState({}, "", fullPathname);
   window.dispatchEvent(new PopStateEvent("popstate"));
 }
 
