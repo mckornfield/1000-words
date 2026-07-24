@@ -66,7 +66,9 @@ export function DashboardPage({ dashboardData, avatarSrc, onSignOut }: Dashboard
             <div style={{ fontWeight: 700, fontSize: "0.95rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {profile.displayName}
             </div>
-            <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>{profile.bio}</div>
+            {profile.bio && (
+              <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>{profile.bio}</div>
+            )}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexShrink: 0 }}>
             <FireIcon />

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { appConfig } from "./config/appConfig";
 import { supabase } from "./lib/supabase";
-import { localAccountRepository } from "./data/account/repository";
+import { localAccountRepository, type DashboardData } from "./data/account/repository";
+import { computeLevelFromXp } from "./lib/leveling";
 import { localAuthRepository } from "./data/auth/repository";
 import { createSupabaseAuthRepository } from "./data/auth/supabaseAuthRepository";
 import { createSupabaseProfileRepository } from "./data/profile/supabaseProfileRepository";
@@ -96,23 +97,65 @@ export function App() {
     if (session && currentRoute.path === "/login") { navigate("/dashboard"); return; }
   }, [session, currentRoute, authReady]);
 
-  // Static dashboard data (fixture — lessons, achievements catalog, store catalog).
-  // For demo mode this is synchronous. For Supabase mode, the fixture still supplies
-  // the static content; live user state comes via the repos in AppContext.
-  const dashboardData = useMemo(() => {
-    if (!session) return null;
-    // Demo mode userId is "Usr-001"; Supabase mode uses UUID.
-    // Fixture lookup works in demo mode; in Supabase mode we fall back to a
-    // hardcoded fixture userId so static content (lesson catalog etc.) still renders.
-    const fixtureUserId = isDemo ? session.userId : "Usr-001";
-    try {
-      return localAccountRepository.getDashboardData(fixtureUserId);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error loading account data.";
-      console.error(`[App] Failed to load dashboard data:`, err);
-      setDataError(`Unable to load your account data. ${message}`);
-      return null;
+  // Dashboard data. In demo mode this is entirely fixture-driven (synchronous).
+  // In Supabase mode, the fixture still supplies the *static catalog* (lessons,
+  // achievement/store definitions — genuinely shared, not per-user), but
+  // `profile` gets overwritten with the real signed-in user's data below —
+  // it used to leak the fixture's hardcoded "demo" profile to every real user.
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+
+  useEffect(() => {
+    if (!session) { setDashboardData(null); return; }
+
+    if (isDemo) {
+      try {
+        setDashboardData(localAccountRepository.getDashboardData(session.userId));
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown error loading account data.";
+        console.error(`[App] Failed to load dashboard data:`, err);
+        setDataError(`Unable to load your account data. ${message}`);
+        setDashboardData(null);
+      }
+      return;
     }
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const fixture = localAccountRepository.getDashboardData("Usr-001");
+        const real = await createSupabaseProfileRepository().getProfile(session.userId);
+        if (cancelled) return;
+        const { profileLevel, xpToNextLevel } = computeLevelFromXp(real.xp);
+        setDashboardData({
+          ...fixture,
+          profile: {
+            ...fixture.profile,
+            userId: session.userId,
+            displayName: real.displayName || session.email.split("@")[0] || "Learner",
+            email: session.email,
+            phone: "",
+            bio: real.bio,
+            // Not stored server-side; the Settings UI already labels this "Auto-detected".
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            xp: real.xp,
+            tokens: real.tokens,
+            streakDays: real.streakCount,
+            profileLevel,
+            xpToNextLevel,
+            themePreference: real.settings.themePreference,
+            lastActiveDate: real.lastActiveDate ?? fixture.profile.lastActiveDate,
+            joinedDate: real.createdAt ?? fixture.profile.joinedDate,
+          },
+        });
+      } catch (err) {
+        if (cancelled) return;
+        const message = err instanceof Error ? err.message : "Unknown error loading account data.";
+        console.error(`[App] Failed to load dashboard data:`, err);
+        setDataError(`Unable to load your account data. ${message}`);
+        setDashboardData(null);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [session, isDemo]);
 
   // Avatar from fixture profile.

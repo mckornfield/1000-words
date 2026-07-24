@@ -35,7 +35,7 @@ export function createSupabaseProfileRepository(): ProfileRepository {
     async getProfile(userId) {
       const { data, error } = await supabase
         .from("profiles")
-        .select("user_id, display_name, settings, streak_count, xp, tokens, last_active_date")
+        .select("user_id, display_name, settings, streak_count, xp, tokens, last_active_date, created_at")
         .eq("user_id", userId)
         .single();
       if (error) throw error;
@@ -47,6 +47,7 @@ export function createSupabaseProfileRepository(): ProfileRepository {
         tokens: (data.tokens as number) ?? 0,
         streakCount: (data.streak_count as number) ?? 0,
         lastActiveDate: (data.last_active_date as string | null) ?? null,
+        createdAt: (data.created_at as string | null) ?? null,
         settings: parseSettings(data.settings),
       } satisfies AppProfile;
     },

@@ -36,6 +36,7 @@ export interface AppProfile {
   tokens: number;
   streakCount: number;
   lastActiveDate: string | null;
+  createdAt: string | null;
   settings: UserSettings;
 }
 
