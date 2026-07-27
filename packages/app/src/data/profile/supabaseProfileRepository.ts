@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { AppProfile, ProfileRepository, UserSettings } from "../types";
 
 const DEFAULT_SETTINGS: UserSettings = {
@@ -30,24 +31,25 @@ function parseSettings(raw: unknown): UserSettings {
   };
 }
 
-export function createSupabaseProfileRepository(): ProfileRepository {
+export function createSupabaseProfileRepository(injectedClient: SupabaseClient = supabase): ProfileRepository {
   return {
     async getProfile(userId) {
-      const { data, error } = await supabase
+      const { data, error } = await injectedClient
         .from("profiles")
-        .select("user_id, display_name, settings, streak_count, xp, tokens, last_active_date, created_at")
+        .select("user_id, display_name, bio, time_zone, settings, streak_count, xp, tokens, last_active_date, created_at")
         .eq("user_id", userId)
         .single();
       if (error) throw error;
       return {
         userId: data.user_id as string,
         displayName: (data.display_name as string | null) ?? "",
-        bio: "",
+        bio: (data.bio as string | null) ?? "",
         xp: (data.xp as number) ?? 0,
         tokens: (data.tokens as number) ?? 0,
         streakCount: (data.streak_count as number) ?? 0,
         lastActiveDate: (data.last_active_date as string | null) ?? null,
         createdAt: (data.created_at as string | null) ?? null,
+        timeZone: (data.time_zone as string | null) ?? undefined,
         settings: parseSettings(data.settings),
       } satisfies AppProfile;
     },
@@ -57,32 +59,9 @@ export function createSupabaseProfileRepository(): ProfileRepository {
       if (patch.displayName !== undefined) updates.display_name = patch.displayName;
       if (patch.bio !== undefined) updates.bio = patch.bio;
       if (patch.settings !== undefined) updates.settings = patch.settings;
-      const { error } = await supabase
+      const { error } = await injectedClient
         .from("profiles")
         .update(updates)
-        .eq("user_id", userId);
-      if (error) throw error;
-    },
-
-    async addXp(userId, delta) {
-      const { error } = await supabase.rpc("increment_xp", { uid: userId, delta });
-      if (error) throw error;
-    },
-
-    async addTokens(userId, amount) {
-      const { error } = await supabase.rpc("add_tokens", { uid: userId, amount });
-      if (error) throw error;
-    },
-
-    async spendTokens(userId, amount) {
-      const { error } = await supabase.rpc("spend_tokens", { uid: userId, amount });
-      if (error) throw error;
-    },
-
-    async touchStreak(userId, date) {
-      const { error } = await supabase
-        .from("profiles")
-        .update({ last_active_date: date })
         .eq("user_id", userId);
       if (error) throw error;
     },

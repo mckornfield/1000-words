@@ -38,11 +38,13 @@ run_check() {
   fi
 }
 
-run_check "lint"             "pnpm lint --quiet"
-run_check "typecheck"        "pnpm typecheck"
-run_check "unit-tests"       "pnpm test"
-run_check "content-validate" "pnpm --filter @1000words/content validate"
-run_check "app-build"        "pnpm --filter @1000words/app build"
+run_check "lint"               "pnpm lint --quiet"
+run_check "typecheck"          "pnpm typecheck"
+run_check "unit-tests"         "pnpm test"
+run_check "content-validate"   "pnpm --filter @1000words/content validate"
+run_check "artifact-validator" "pnpm test:artifact-validator"
+run_check "pages-build"        "BASE_URL=/1000-words/ VITE_DEMO_LOGIN=true pnpm --filter @1000words/app build"
+run_check "artifact-contents"  "BASE_URL=/1000-words/ pnpm validate:dist"
 
 # Output JSON array for machine consumption
 echo "["

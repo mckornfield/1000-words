@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { availableLanguages } from "@1000words/content";
 import type { DashboardData } from "../../data/account/repository";
 import { navigate } from "../../lib/router";
 import { FireIcon, GearIcon, FLAG_ICONS } from "../shared/icons";
@@ -9,12 +10,10 @@ interface DashboardPageProps {
   onSignOut: () => void;
 }
 
-const STUDY_LANGUAGES = [
-  { langPair: "en-es", label: "Study Spanish" },
-  { langPair: "en-zh", label: "Study Mandarin" },
-  { langPair: "en-ko", label: "Study Korean" },
-  { langPair: "en-ja", label: "Study Japanese" },
-];
+const STUDY_LANGUAGES = availableLanguages().map((language) => ({
+  langPair: language.id,
+  label: `Study ${language.target.displayName}`,
+}));
 
 function goalStatusBadge(status: string): string {
   if (status === "completed") return "badge badge-ok";
@@ -52,30 +51,32 @@ export function DashboardPage({ dashboardData, avatarSrc, onSignOut }: Dashboard
         </header>
 
         {/* Profile strip */}
-        <div
+        <button
+          type="button"
+          aria-label="Open profile"
           className="bento-cell"
           onClick={() => navigate("/profile")}
-          style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem", padding: "0.75rem 1rem" }}
+          style={{ cursor: "pointer", display: "flex", width: "100%", alignItems: "center", gap: "0.75rem", marginBottom: "1rem", padding: "0.75rem 1rem", color: "var(--text)", textAlign: "left", textTransform: "none", letterSpacing: 0 }}
         >
           <img
             src={avatarSrc}
             alt={`${profile.displayName} avatar`}
             style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
           />
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: "0.95rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "block", fontWeight: 700, fontSize: "0.95rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {profile.displayName}
-            </div>
+            </span>
             {profile.bio && (
-              <div style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>{profile.bio}</div>
+              <span style={{ display: "block", fontSize: "0.82rem", color: "var(--text-secondary)" }}>{profile.bio}</span>
             )}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexShrink: 0 }}>
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: "0.35rem", flexShrink: 0 }}>
             <FireIcon />
             <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>{profile.streakDays}</span>
             <span style={{ fontSize: "0.82rem", color: "var(--text-secondary)" }}>day streak</span>
-          </div>
-        </div>
+          </span>
+        </button>
 
         {/* XP / Level */}
         <div className="bento-cell" style={{ marginBottom: "1rem" }}>

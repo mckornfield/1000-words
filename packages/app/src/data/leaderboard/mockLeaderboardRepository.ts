@@ -1,8 +1,8 @@
 import type { LeaderboardEntry, LeaderboardRepository } from "../types";
+import { computeLevelFromXp } from "../../lib/leveling";
 
-// Must match the SQL formula: FLOOR(xp / 250)::int + 1
 function xpToLevel(xp: number): number {
-  return Math.floor(xp / 250) + 1;
+  return computeLevelFromXp(xp).profileLevel;
 }
 
 // Build fixture entries pre-sort — ranked by rankValue DESC, then xp DESC.

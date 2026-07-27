@@ -15,9 +15,13 @@
     "typecheck": "pnpm -r typecheck",
     "dev": "pnpm --filter @1000words/app dev",
     "review": "bash scripts/review.sh",
-    "e2e": "playwright test"
+    "test:artifact-validator": "node --test e2e/validate-dist.test.mjs",
+    "validate:dist": "node e2e/helpers/validate-dist.mjs",
+    "e2e": "playwright test --project=desktop --project=mobile-320 --project=mobile-short",
+    "e2e:hosted": "playwright test --project=hosted-smoke"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
     "eslint": "^10.4.1",

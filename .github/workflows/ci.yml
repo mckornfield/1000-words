@@ -1,23 +1,88 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  build:
+  quality:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm --filter @1000words/content validate
+      - run: pnpm review
+
+  demo-pages-artifact:
+    needs: quality
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: "/1000-words/"
+      VITE_DEMO_LOGIN: "true"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @1000words/app build
+      - run: pnpm validate:dist
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Exercise the built GitHub Pages artifact
+        run: pnpm e2e
+        env:
+          CI: "true"
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-failure-ci
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+  supabase-integration:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: supabase/setup-cli@ab058987d8d6c725971f6cf9d0b5c98467e30bd1 # v1.7.1
+        with:
+          version: 2.109.1
+      - name: Start and reset local Supabase
+        run: |
+          supabase start
+          supabase db reset
+          supabase status -o env > /tmp/supabase.env
+          source /tmp/supabase.env
+          echo "SUPABASE_URL=${API_URL:-http://127.0.0.1:54321}" >> "$GITHUB_ENV"
+          echo "VITE_SUPABASE_URL=${API_URL:-http://127.0.0.1:54321}" >> "$GITHUB_ENV"
+          echo "SUPABASE_ANON_KEY=${ANON_KEY}" >> "$GITHUB_ENV"
+          echo "VITE_SUPABASE_ANON_KEY=${ANON_KEY}" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}" >> "$GITHUB_ENV"
+      - name: Run RLS, RPC, and idempotency integration suites without skips
+        run: |
+          pnpm --filter @1000words/app exec vitest run \
+            src/data/progressStore.rls.test.ts \
+            src/data/profile/rewardRpcs.rls.test.ts \
+            src/data/secureBoundary.rls.test.ts \
+            --reporter=json --outputFile=/tmp/rls-results.json
+          EXPECTED_TEST_COUNT=29 node -e 'const r=require("/tmp/rls-results.json"); const expected=Number(process.env.EXPECTED_TEST_COUNT); if (expected <= 0 || r.numTotalTests !== expected || r.numPendingTests || r.numFailedTests || r.numPassedTests !== expected) { console.error({ expected, ...r }); process.exit(1) } console.log(`RLS integration: ${r.numPassedTests}/${expected} passed, 0 skipped`)'
+      - name: Run Supabase smoke
+        run: pnpm --filter @1000words/app supabase:smoke

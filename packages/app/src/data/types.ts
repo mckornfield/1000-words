@@ -1,4 +1,5 @@
 import type { ProgressStore } from "./progressStore";
+import type { DashboardData } from "./account/repository";
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
@@ -37,6 +38,7 @@ export interface AppProfile {
   streakCount: number;
   lastActiveDate: string | null;
   createdAt: string | null;
+  timeZone?: string;
   settings: UserSettings;
 }
 
@@ -46,10 +48,6 @@ export interface ProfileRepository {
     userId: string,
     patch: Partial<Pick<AppProfile, "displayName" | "bio" | "settings">>,
   ): Promise<void>;
-  addXp(userId: string, delta: number): Promise<void>;
-  addTokens(userId: string, delta: number): Promise<void>;
-  spendTokens(userId: string, amount: number): Promise<void>;
-  touchStreak(userId: string, date: string): Promise<void>;
 }
 
 // ─── Achievements ─────────────────────────────────────────────────────────────
@@ -61,7 +59,6 @@ export interface UserAchievement {
 
 export interface AchievementRepository {
   getUserAchievements(userId: string): Promise<UserAchievement[]>;
-  unlock(userId: string, achievementId: string): Promise<void>;
 }
 
 // ─── Inventory + Equip ────────────────────────────────────────────────────────
@@ -78,11 +75,97 @@ export interface UserEquippedRecord {
   itemId: string;
 }
 
+export interface PurchaseItemCommand {
+  itemId: string;
+  requestId: string;
+}
+
+export interface PurchaseItemResult {
+  requestId: string;
+  itemId: string;
+  tokenCost: number;
+  balance: number;
+  inventoryRecord: UserInventoryRecord;
+  status: "purchased" | "already_owned";
+  replayed: boolean;
+}
+
+export interface EquipItemCommand {
+  itemId: string;
+  requestId: string;
+}
+
+export interface EquipItemResult {
+  requestId: string;
+  itemId: string;
+  equipped: UserEquippedRecord;
+  replacedItemId: string | null;
+  replayed: boolean;
+}
+
 export interface InventoryRepository {
   getInventory(userId: string): Promise<UserInventoryRecord[]>;
   getEquipped(userId: string): Promise<UserEquippedRecord[]>;
-  purchase(userId: string, itemId: string, xpCost: number): Promise<void>;
-  equip(userId: string, slot: EquipSlot, itemId: string): Promise<void>;
+  purchase(command: PurchaseItemCommand): Promise<PurchaseItemResult>;
+  equip(command: EquipItemCommand): Promise<EquipItemResult>;
+}
+
+// ─── Atomic Study Commands ────────────────────────────────────────────────────
+
+export interface RecordCardReviewCommand {
+  reviewId: string;
+  sessionId: string;
+  langPair: import("@1000words/content").LangPair;
+  cardId: string;
+  rating: import("@1000words/engine").Rating;
+  elapsedMs: number;
+  nextState: import("@1000words/engine").FsrsState;
+}
+
+export interface RecordedCardReview {
+  reviewId: string;
+  sessionId: string;
+  cardId: string;
+  rating: import("@1000words/engine").Rating;
+  reviewedAt: string;
+  progress: import("@1000words/engine").FsrsState;
+  replayed: boolean;
+}
+
+export interface CompleteStudySessionCommand {
+  sessionId: string;
+  langPair: import("@1000words/content").LangPair;
+  startedAt: string;
+  completedAt: string;
+}
+
+export interface LearningTotals {
+  cardsReviewed: number;
+  sessionsCompleted: number;
+  minutesStudied: number;
+  perfectSessions: number;
+}
+
+export interface StudyCompletionResult {
+  sessionId: string;
+  completedAt: string;
+  localStudyDate: string;
+  cardsReviewed: number;
+  durationSeconds: number;
+  accuracy: number;
+  reviewXp: number;
+  achievementXp: number;
+  totalXpAwarded: number;
+  profile: AppProfile;
+  goals: DailyGoalRecord[];
+  totals: LearningTotals;
+  unlockedAchievements: UserAchievement[];
+  replayed: boolean;
+}
+
+export interface StudyRepository {
+  recordCardReview(command: RecordCardReviewCommand): Promise<RecordedCardReview>;
+  completeStudySession(command: CompleteStudySessionCommand): Promise<StudyCompletionResult>;
 }
 
 // ─── Daily Goals ─────────────────────────────────────────────────────────────
@@ -96,7 +179,6 @@ export interface DailyGoalRecord {
 
 export interface DailyGoalRepository {
   getTodayGoals(userId: string): Promise<DailyGoalRecord[]>;
-  incrementGoal(userId: string, goalType: string, by: number): Promise<void>;
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
@@ -131,11 +213,80 @@ export interface LeaderboardRepository {
   getCurrentUserEntry(userId: string): Promise<LeaderboardEntry | null>;
 }
 
+export type AppMode = "demo" | "supabase";
+
+export interface Clock {
+  now(): Date;
+}
+
+export interface StaticCatalog {
+  lessons: DashboardData["lessons"];
+  achievements: DashboardData["achievements"];
+  storeItems: DashboardData["storeItems"];
+}
+
+export interface AppServices {
+  readonly mode: AppMode;
+  readonly userId: string;
+  readonly catalog: StaticCatalog;
+  readonly progressStore: ProgressStore;
+  readonly studyRepo: StudyRepository;
+  readonly profileRepo: ProfileRepository;
+  readonly achievementRepo: AchievementRepository;
+  readonly inventoryRepo: InventoryRepository;
+  readonly goalRepo: DailyGoalRepository;
+  readonly statsRepo: StatsRepository;
+  readonly leaderboardRepo: LeaderboardRepository;
+  dispose(): void;
+  resetDemoData?(): Promise<void>;
+}
+
+export type RefreshDomain =
+  | "profile"
+  | "goals"
+  | "achievements"
+  | "inventory"
+  | "equipped"
+  | "stats"
+  | "leaderboard";
+
+export interface UserStateSnapshot {
+  profile: AppProfile | null;
+  goals: DailyGoalRecord[];
+  achievements: UserAchievement[];
+  inventory: UserInventoryRecord[];
+  equipped: UserEquippedRecord[];
+  stats: DailyXp[];
+  leaderboard: { entries: LeaderboardEntry[]; currentUser: LeaderboardEntry | null };
+}
+
+export interface RefreshState {
+  snapshot: UserStateSnapshot;
+  pending: ReadonlySet<RefreshDomain>;
+  errors: Partial<Record<RefreshDomain, Error>>;
+  versions: Readonly<Record<RefreshDomain, number>>;
+}
+
+export interface RefreshCoordinator {
+  getState(): RefreshState;
+  subscribe(listener: () => void): () => void;
+  refresh(domains: readonly RefreshDomain[]): Promise<void>;
+  patch(patch: Partial<UserStateSnapshot>): void;
+  invalidate(domains: readonly RefreshDomain[]): void;
+  dispose(): void;
+}
+
 // ─── App Context ──────────────────────────────────────────────────────────────
 
 export interface AppContextValue {
   userId: string;
+  services: AppServices;
+  coordinator: RefreshCoordinator;
+  state: RefreshState;
+  refresh(domains: readonly RefreshDomain[]): Promise<void>;
+  patchSnapshot(patch: Partial<UserStateSnapshot>): void;
   progressStore: ProgressStore;
+  studyRepo: StudyRepository;
   profileRepo: ProfileRepository;
   achievementRepo: AchievementRepository;
   inventoryRepo: InventoryRepository;

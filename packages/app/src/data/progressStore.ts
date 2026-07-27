@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { FsrsState, ProgressMap, Rating } from "@1000words/engine";
-import type { LangPair } from "@1000words/content";
+import { languageForCardId, type LangPair } from "@1000words/content";
 
 /**
  * Progress sync contract.
@@ -38,11 +38,8 @@ const RATING_CODE: Record<Rating, number> = {
  * call. Keep aligned with the Card schema in @1000words/content.
  */
 function langPairFromCardId(cardId: string): LangPair {
-  const target = cardId.split("-")[0];
-  if (target === "es") return "en-es";
-  if (target === "zh") return "en-zh";
-  if (target === "ko") return "en-ko";
-  if (target === "ja") return "en-ja";
+  const registration = languageForCardId(cardId);
+  if (registration) return registration.id;
   throw new Error(`Cannot derive langPair from card id: ${cardId}`);
 }
 

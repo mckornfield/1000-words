@@ -3,7 +3,7 @@ import { navigate } from "../../lib/router";
 import type { DashboardData } from "../../data/account/repository";
 import { Breadcrumb } from "../shared/Breadcrumb";
 import { useToast } from "../shared/Toast";
-import { useAppContext } from "../../data/AppContext";
+import { useAppContext, useAppState } from "../../data/AppContext";
 import type { UserSettings } from "../../data/types";
 
 interface SettingsPageProps {
@@ -14,15 +14,17 @@ type Theme = "light" | "dark" | "system";
 
 export function SettingsPage({ dashboardData }: SettingsPageProps) {
   const { showSuccess, showError } = useToast();
-  const { profileRepo, userId } = useAppContext();
+  const { profileRepo, userId, patchSnapshot, refresh } = useAppContext();
+  const { snapshot } = useAppState();
   const profile = dashboardData.profile;
+  const settingsSnapshot = snapshot.profile?.settings;
 
-  const [theme, setTheme]               = useState<Theme>(profile.themePreference);
-  const [notifyStreak, setNotifyStreak] = useState(true);
-  const [notifyGoals, setNotifyGoals]   = useState(true);
-  const [notifyXp, setNotifyXp]         = useState(false);
-  const [dailyMinutes, setDailyMinutes] = useState(15);
-  const [autoAdvance, setAutoAdvance]   = useState(false);
+  const [theme, setTheme]               = useState<Theme>(settingsSnapshot?.themePreference ?? profile.themePreference);
+  const [notifyStreak, setNotifyStreak] = useState(settingsSnapshot?.notifications.streak ?? true);
+  const [notifyGoals, setNotifyGoals]   = useState(settingsSnapshot?.notifications.goalComplete ?? true);
+  const [notifyXp, setNotifyXp]         = useState(settingsSnapshot?.notifications.xpMilestone ?? false);
+  const [dailyMinutes, setDailyMinutes] = useState(settingsSnapshot?.dailyGoalMinutes ?? 15);
+  const [autoAdvance, setAutoAdvance]   = useState(settingsSnapshot?.autoAdvance ?? false);
   const [saving, setSaving]             = useState(false);
 
   const handleSave = async () => {
@@ -39,6 +41,8 @@ export function SettingsPage({ dashboardData }: SettingsPageProps) {
         },
       };
       await profileRepo.updateProfile(userId, { settings });
+      if (snapshot.profile) patchSnapshot({ profile: { ...snapshot.profile, settings } });
+      await refresh(["profile"]);
       showSuccess("Settings saved", "Your preferences have been updated.");
     } catch (err) {
       console.error("[SettingsPage] Failed to save settings:", err);
@@ -76,6 +80,8 @@ export function SettingsPage({ dashboardData }: SettingsPageProps) {
               {(["light", "dark", "system"] as Theme[]).map((t) => (
                 <button
                   key={t}
+                  type="button"
+                  aria-pressed={theme === t}
                   onClick={() => setTheme(t)}
                   style={{
                     padding: "0.3rem 0.7rem",
@@ -110,6 +116,8 @@ export function SettingsPage({ dashboardData }: SettingsPageProps) {
               {[5, 10, 15, 20, 30].map((m) => (
                 <button
                   key={m}
+                  type="button"
+                  aria-pressed={dailyMinutes === m}
                   onClick={() => setDailyMinutes(m)}
                   style={{
                     padding: "0.3rem 0.6rem",
@@ -135,12 +143,19 @@ export function SettingsPage({ dashboardData }: SettingsPageProps) {
               <div className="settings-row-label">Auto-advance cards</div>
               <div className="settings-row-desc">Skip the flip — show both sides simultaneously</div>
             </div>
-            <label className="settings-toggle" onClick={() => setAutoAdvance((v) => !v)}>
-              <div className={`toggle-track${autoAdvance ? " on" : ""}`}>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={autoAdvance}
+              aria-label="Auto-advance cards"
+              className="settings-toggle"
+              onClick={() => setAutoAdvance((v) => !v)}
+            >
+              <span className={`toggle-track${autoAdvance ? " on" : ""}`} aria-hidden="true">
                 <div className="toggle-thumb" />
-              </div>
+              </span>
               <span>{autoAdvance ? "On" : "Off"}</span>
-            </label>
+            </button>
           </div>
         </div>
 
@@ -159,12 +174,19 @@ export function SettingsPage({ dashboardData }: SettingsPageProps) {
                 <div className="settings-row-label">{label}</div>
                 <div className="settings-row-desc">{desc}</div>
               </div>
-              <label className="settings-toggle" onClick={() => set((v) => !v)}>
-                <div className={`toggle-track${value ? " on" : ""}`}>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={value}
+                aria-label={label}
+                className="settings-toggle"
+                onClick={() => set((v) => !v)}
+              >
+                <span className={`toggle-track${value ? " on" : ""}`} aria-hidden="true">
                   <div className="toggle-thumb" />
-                </div>
+                </span>
                 <span>{value ? "On" : "Off"}</span>
-              </label>
+              </button>
             </div>
           ))}
         </div>

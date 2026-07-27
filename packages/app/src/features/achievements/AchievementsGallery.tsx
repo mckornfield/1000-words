@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
 import { LockedIcon, HalfProgressIcon } from "../shared/icons";
 import type { DashboardData } from "../../data/account/repository";
-import { useAppContext } from "../../data/AppContext";
-import type { UserAchievement } from "../../data/types";
+import { useAppState } from "../../data/AppContext";
 
 interface AchievementsGalleryProps {
   dashboardData: DashboardData;
@@ -14,14 +13,10 @@ type RarityFilter = "all" | "common" | "rare" | "epic" | "legendary";
 type StatusFilter = "all" | "completed" | "in_progress" | "locked";
 
 export function AchievementsGallery({ dashboardData }: AchievementsGalleryProps) {
-  const { userId, achievementRepo } = useAppContext();
+  const { snapshot } = useAppState();
   const [rarityFilter, setRarityFilter] = useState<RarityFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
-
-  useEffect(() => {
-    achievementRepo.getUserAchievements(userId).then(setUserAchievements).catch(console.error);
-  }, [userId, achievementRepo]);
+  const userAchievements = snapshot.achievements;
 
   const earnedIds = new Set(userAchievements.map((a) => a.achievementId));
 
@@ -157,9 +152,18 @@ export function AchievementsGallery({ dashboardData }: AchievementsGalleryProps)
             return (
               <div
                 key={achievement.achievementId}
+                role="button"
+                tabIndex={0}
+                aria-label={`Open ${achievement.title} achievement`}
                 onClick={() =>
                   navigate("/achievements/:achievementId", { achievementId: achievement.achievementId })
                 }
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    navigate("/achievements/:achievementId", { achievementId: achievement.achievementId });
+                  }
+                }}
                 className="bento-cell"
                 style={{
                   cursor: "pointer",
