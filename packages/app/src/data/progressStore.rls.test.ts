@@ -171,7 +171,10 @@ describe.skipIf(!hasStack)("secure progress and economy domain boundary", () => 
     expect(purchase.error).toBeNull();
     expect(purchase.data).toMatchObject({ itemId: "Border-001", tokenCost: 90, balance: 410, status: "purchased" });
 
-    const equipped = await userA.client.rpc("equip_item", { p_item_id: "Border-001" });
+    const equipped = await userA.client.rpc("equip_item", {
+      p_item_id: "Border-001",
+      p_request_id: crypto.randomUUID(),
+    });
     expect(equipped.error).toBeNull();
     expect(equipped.data.equipped).toEqual({ slot: "profile_border", itemId: "Border-001" });
   });
