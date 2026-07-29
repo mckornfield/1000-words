@@ -82,7 +82,7 @@ jobs:
             src/data/progressStore.rls.test.ts \
             src/data/profile/rewardRpcs.rls.test.ts \
             src/data/secureBoundary.rls.test.ts \
-            --reporter=json --outputFile=/tmp/rls-results.json
+            --reporter=default --reporter=json --outputFile=/tmp/rls-results.json
           EXPECTED_TEST_COUNT=29 node -e 'const r=require("/tmp/rls-results.json"); const expected=Number(process.env.EXPECTED_TEST_COUNT); if (expected <= 0 || r.numTotalTests !== expected || r.numPendingTests || r.numFailedTests || r.numPassedTests !== expected) { console.error({ expected, ...r }); process.exit(1) } console.log(`RLS integration: ${r.numPassedTests}/${expected} passed, 0 skipped`)'
       - name: Run Supabase smoke
         run: pnpm --filter @1000words/app supabase:smoke
