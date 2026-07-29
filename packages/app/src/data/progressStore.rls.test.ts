@@ -15,7 +15,7 @@ const PASSWORD = "rls-test-password-1!";
 const suffix = Date.now();
 
 const nextState = {
-  due: "2026-07-27T00:00:00.000Z",
+  due: new Date(Date.now() + 24 * 60 * 60 * 1_000).toISOString(),
   stability: 1,
   difficulty: 5,
   elapsedDays: 0,
@@ -24,7 +24,7 @@ const nextState = {
   reps: 1,
   lapses: 0,
   state: 2,
-  lastReview: "2026-07-26T12:00:00.000Z",
+  lastReview: new Date().toISOString(),
 };
 
 function anonClient(): SupabaseClient {
