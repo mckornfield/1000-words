@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
 import { Breadcrumb } from "../shared/Breadcrumb";
 import { HourglassIcon, CoinIcon, LockedIcon } from "../shared/icons";
 import type { DashboardData } from "../../data/account/repository";
 import { useToast } from "../shared/Toast";
-import { useAppContext } from "../../data/AppContext";
-import type { EquipSlot, UserAchievement } from "../../data/types";
+import { useAppContext, useAppState } from "../../data/AppContext";
+
 
 interface ItemDetailProps {
   dashboardData: DashboardData;
@@ -16,29 +16,21 @@ interface ItemDetailProps {
 export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
   const item = dashboardData.storeItems.find((i) => i.storeItemId === itemId);
   const { showSuccess, showError } = useToast();
-  const { inventoryRepo, profileRepo, achievementRepo, userId } = useAppContext();
-
-  const [isOwned, setIsOwned]         = useState(item?.isOwned ?? false);
-  const [isEquipped, setIsEquipped]   = useState(item?.isEquipped ?? false);
-  const [userTokens, setUserTokens]   = useState(dashboardData.profile.tokens);
-  const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
+  const { inventoryRepo, refresh } = useAppContext();
+  const { snapshot } = useAppState();
+  const isOwned = snapshot.inventory.some((record) => record.itemId === itemId);
+  const isEquipped = snapshot.equipped.some((record) => record.itemId === itemId);
+  const userTokens = snapshot.profile?.tokens ?? dashboardData.profile.tokens;
+  const userAchievements = snapshot.achievements;
   const [busy, setBusy]               = useState(false);
-
-  useEffect(() => {
-    // Read live repo state (not the stale fixture) so purchases/equips made
-    // earlier in the session are reflected when navigating back to this item.
-    Promise.all([
-      inventoryRepo.getInventory(userId),
-      inventoryRepo.getEquipped(userId),
-    ]).then(([inv, eq]) => {
-      setIsOwned(inv.some((r) => r.itemId === itemId));
-      setIsEquipped(eq.some((r) => r.itemId === itemId));
-    }).catch(console.error);
-  }, [userId, itemId, inventoryRepo]);
-
-  useEffect(() => {
-    achievementRepo.getUserAchievements(userId).then(setUserAchievements).catch(console.error);
-  }, [userId, achievementRepo]);
+  const purchaseRequest = useRef({ itemId, requestId: crypto.randomUUID() });
+  const equipRequest = useRef({ itemId, requestId: crypto.randomUUID() });
+  if (purchaseRequest.current.itemId !== itemId) {
+    purchaseRequest.current = { itemId, requestId: crypto.randomUUID() };
+  }
+  if (equipRequest.current.itemId !== itemId) {
+    equipRequest.current = { itemId, requestId: crypto.randomUUID() };
+  }
 
   const earnedIds = new Set(userAchievements.map((a) => a.achievementId));
   const requiredAchId = item?.achievementIdRequired ?? null;
@@ -72,11 +64,17 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
     if (busy || !canAfford || isAchLocked) return;
     setBusy(true);
     try {
-      await profileRepo.spendTokens(userId, item.tokenCost);
-      await inventoryRepo.purchase(userId, item.storeItemId, 0);
-      setIsOwned(true);
-      setUserTokens((prev) => prev - item.tokenCost);
-      showSuccess(`Purchased ${item.name}!`, `${item.tokenCost} tokens deducted from your balance.`);
+      const result = await inventoryRepo.purchase({
+        itemId: item.storeItemId,
+        requestId: purchaseRequest.current.requestId,
+      });
+      await refresh(["profile", "inventory"]);
+      showSuccess(
+        result.status === "already_owned" ? `${item.name} already owned` : `Purchased ${item.name}!`,
+        result.status === "already_owned"
+          ? "Your collection is already up to date."
+          : `${result.tokenCost} tokens deducted. ${result.balance} remaining.`,
+      );
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
       if (msg === "insufficient_tokens") {
@@ -94,8 +92,8 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
     if (busy || !isOwned) return;
     setBusy(true);
     try {
-      await inventoryRepo.equip(userId, item.category as EquipSlot, item.storeItemId);
-      setIsEquipped(true);
+      await inventoryRepo.equip({ itemId: item.storeItemId, requestId: equipRequest.current.requestId });
+      await refresh(["equipped", "leaderboard"]);
       showSuccess(`${item.name} equipped!`, "Your profile has been updated.");
     } catch (err) {
       console.error("[ItemDetail] Equip failed:", err);
@@ -110,7 +108,7 @@ export function ItemDetail({ dashboardData, itemId }: ItemDetailProps) {
       <div style={{ maxWidth: "900px", margin: "0 auto", padding: "1rem" }}>
         <Breadcrumb currentPath="/shop/:itemId" params={{ itemId }} labels={{ itemName: item.name }} />
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", alignItems: "start" }}>
+        <div className="item-detail-grid" style={{ gap: "2rem", alignItems: "start" }}>
           {/* Item Display */}
           <div className="bento-cell">
             <div

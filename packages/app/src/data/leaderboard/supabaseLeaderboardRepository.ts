@@ -1,4 +1,5 @@
 import { supabase } from "../../lib/supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { LeaderboardEntry, LeaderboardRepository } from "../types";
 
 // Maps a raw RPC row (snake_case) to a LeaderboardEntry (camelCase).
@@ -12,11 +13,11 @@ function mapRow(
     level: number;
     achievement_count: number;
     rank_value: number;
+    rank: number;
     border_item_id: string | null;
     badge_item_id: string | null;
     avatar_item_id: string | null;
   },
-  rank: number,
 ): LeaderboardEntry {
   return {
     userId: row.user_id,
@@ -25,17 +26,17 @@ function mapRow(
     level: row.level,
     achievementCount: Number(row.achievement_count),
     rankValue: Number(row.rank_value),
-    rank,
+    rank: Number(row.rank),
     equippedBorderId: row.border_item_id,
     equippedBadgeId: row.badge_item_id,
     equippedAvatarId: row.avatar_item_id,
   };
 }
 
-export function createSupabaseLeaderboardRepository(): LeaderboardRepository {
+export function createSupabaseLeaderboardRepository(client: SupabaseClient = supabase): LeaderboardRepository {
   return {
     async getTopN(n: number): Promise<LeaderboardEntry[]> {
-      const { data, error } = await supabase.rpc("get_leaderboard", { n });
+      const { data, error } = await client.rpc("get_leaderboard", { n });
       if (error) throw error;
       return (data ?? []).map(
         (
@@ -46,25 +47,21 @@ export function createSupabaseLeaderboardRepository(): LeaderboardRepository {
             level: number;
             achievement_count: number;
             rank_value: number;
+            rank: number;
             border_item_id: string | null;
             badge_item_id: string | null;
             avatar_item_id: string | null;
           },
-          idx: number,
-        ) => mapRow(row, idx + 1),
+        ) => mapRow(row),
       );
     },
 
-    async getCurrentUserEntry(userId: string): Promise<LeaderboardEntry | null> {
-      const { data, error } = await supabase.rpc("get_current_user_rank", {
-        uid: userId,
-      });
+    async getCurrentUserEntry(_userId: string): Promise<LeaderboardEntry | null> {
+      const { data, error } = await client.rpc("get_current_user_rank");
       if (error) throw error;
       if (!data || (Array.isArray(data) && data.length === 0)) return null;
       const row = Array.isArray(data) ? data[0] : data;
-      // rank is -1 as a sentinel when the user is outside the top-N window.
-      // The UI component shows a "You" label without a rank number in that case.
-      return mapRow(row, -1);
+      return mapRow(row);
     },
   };
 }

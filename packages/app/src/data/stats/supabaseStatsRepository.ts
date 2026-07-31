@@ -1,13 +1,14 @@
 import { supabase } from "../../lib/supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { DailyXp, StatsRepository } from "../types";
 
 // rating → approximate XP contribution
 const RATING_XP: Record<number, number> = { 1: 0, 2: 5, 3: 10, 4: 15 };
 
-export function createSupabaseStatsRepository(): StatsRepository {
+export function createSupabaseStatsRepository(client: SupabaseClient = supabase): StatsRepository {
   return {
     async getWeeklyXp(userId, since) {
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from("review_logs")
         .select("reviewed_at, rating")
         .eq("user_id", userId)

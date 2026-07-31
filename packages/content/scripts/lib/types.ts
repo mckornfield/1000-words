@@ -1,4 +1,4 @@
-import type { LangPair } from "../../src/schema";
+import { LANGUAGE_REGISTRY, type LangPair } from "../../src";
 
 export interface DraftedCard {
   word: string;
@@ -19,41 +19,17 @@ export interface LangPairConfig {
   elevenLabsVoiceEnv: string;
 }
 
-export const LANG_PAIR_CONFIGS: Record<LangPair, LangPairConfig> = {
-  "en-es": {
-    langPair: "en-es",
-    targetCode: "es",
-    targetName: "Spanish",
-    sourceName: "English",
-    frequencyFile: "es.txt",
-    idPrefix: "es",
-    elevenLabsVoiceEnv: "ELEVENLABS_VOICE_ES",
-  },
-  "en-zh": {
-    langPair: "en-zh",
-    targetCode: "zh",
-    targetName: "Mandarin Chinese (simplified characters)",
-    sourceName: "English",
-    frequencyFile: "zh.txt",
-    idPrefix: "zh",
-    elevenLabsVoiceEnv: "ELEVENLABS_VOICE_ZH",
-  },
-  "en-ko": {
-    langPair: "en-ko",
-    targetCode: "ko",
-    targetName: "Korean",
-    sourceName: "English",
-    frequencyFile: "ko.txt",
-    idPrefix: "ko",
-    elevenLabsVoiceEnv: "ELEVENLABS_VOICE_KO",
-  },
-  "en-ja": {
-    langPair: "en-ja",
-    targetCode: "ja",
-    targetName: "Japanese",
-    sourceName: "English",
-    frequencyFile: "ja.txt",
-    idPrefix: "ja",
-    elevenLabsVoiceEnv: "ELEVENLABS_VOICE_JA",
-  },
-};
+export const LANG_PAIR_CONFIGS = Object.fromEntries(
+  LANGUAGE_REGISTRY.map((entry) => [
+    entry.id,
+    {
+      langPair: entry.id,
+      targetCode: entry.target.code,
+      targetName: entry.target.displayName,
+      sourceName: entry.source.displayName,
+      frequencyFile: entry.frequencyFile,
+      idPrefix: entry.cardIdPrefix,
+      elevenLabsVoiceEnv: entry.elevenLabsVoiceEnv,
+    },
+  ]),
+) as Record<LangPair, LangPairConfig>;

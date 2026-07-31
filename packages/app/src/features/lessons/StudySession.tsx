@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { navigate } from "../../lib/router";
 import type { DashboardData } from "../../data/account/repository";
-import { loadWordsForLangPair, audioUrl, type WordEntry } from "../../lib/wordData";
+import { DeckLoadError, loadWordsForLangPair, audioUrl, type WordEntry } from "../../lib/wordData";
 import { useToast } from "../shared/Toast";
 import { useAppContext } from "../../data/AppContext";
 import { buildSession, scheduleReview, initialState } from "@1000words/engine";
-import type { Card } from "@1000words/content";
+import { getLanguage, type Card } from "@1000words/content";
 import type { Rating } from "@1000words/engine";
-import { checkAchievements } from "../../lib/achievementEngine";
 import { TrophyIcon, StarIcon, BookIcon, SpinnerIcon, SpeakerIcon, MicIcon } from "../shared/icons";
 import { isSpeechRecognitionSupported, recognizeSpeech } from "../../lib/speechRecognition";
 import { isCloseMatch } from "../../lib/pronunciationScore";
+import type { CompleteStudySessionCommand, RecordCardReviewCommand, StudyCompletionResult } from "../../data/types";
+import { appConfig } from "../../config/appConfig";
 
 interface StudySessionProps {
   dashboardData: DashboardData;
@@ -33,20 +34,25 @@ interface SessionResult {
 function SessionComplete({
   results,
   sessionTitle,
-  maxXp,
+  completion,
   onRestart,
   onBack,
 }: {
   results: SessionResult[];
   sessionTitle: string;
-  maxXp: number;
+  completion: StudyCompletionResult;
   onRestart: () => void;
   onBack: () => void;
 }) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
   const total    = results.length;
-  const correct  = results.filter((r) => r.rating === "good" || r.rating === "easy").length;
-  const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
-  const earnedXp = Math.round(maxXp * (accuracy / 100));
+
+  const accuracy = completion.accuracy;
+  const earnedXp = completion.totalXpAwarded;
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
 
   return (
     <div className="session-complete">
@@ -54,7 +60,7 @@ function SessionComplete({
         {accuracy === 100 ? <TrophyIcon size="5rem" /> : accuracy >= 70 ? <StarIcon size="5rem" /> : <BookIcon size="5rem" />}
       </div>
       <div>
-        <h1 style={{ margin: "0 0 0.3rem", fontSize: "1.8rem", fontWeight: 800, letterSpacing: "-0.02em" }}>
+        <h1 ref={headingRef} tabIndex={-1} style={{ margin: "0 0 0.3rem", fontSize: "1.8rem", fontWeight: 800, letterSpacing: "-0.02em" }}>
           {accuracy === 100 ? "Perfect!" : accuracy >= 70 ? "Great work!" : "Keep going!"}
         </h1>
         <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.95rem" }}>
@@ -71,7 +77,7 @@ function SessionComplete({
           <div className="session-stat-label">Accuracy</div>
         </div>
         <div className="session-stat-cell">
-          <div className="session-stat-number" style={{ color: "#f59e0b" }}>+{earnedXp}</div>
+          <div className="session-stat-number" style={{ color: "#92400e" }}>+{earnedXp}</div>
           <div className="session-stat-label">XP Earned</div>
         </div>
       </div>
@@ -79,13 +85,13 @@ function SessionComplete({
         <div style={{ padding: "0.75rem 1rem", borderBottom: "1px solid var(--border)", fontWeight: 700, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--text-secondary)" }}>
           Breakdown
         </div>
-        <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+        <div tabIndex={0} aria-label="Session card breakdown" style={{ maxHeight: "200px", overflowY: "auto" }}>
           {results.map((r) => (
             <div key={r.cardId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.5rem 1rem", borderBottom: "1px solid var(--border-subtle)", fontSize: "0.85rem", gap: "0.5rem" }}>
               <span style={{ fontWeight: 600 }}>{r.word}</span>
               <span style={{ fontSize: "0.7rem", fontWeight: 700, padding: "0.15em 0.5em", borderRadius: "999px",
                 background: r.rating === "easy" ? "rgba(2,132,199,0.12)" : r.rating === "good" ? "rgba(22,163,74,0.12)" : r.rating === "hard" ? "rgba(234,88,12,0.12)" : "rgba(220,38,38,0.12)",
-                color: r.rating === "easy" ? "#0284c7" : r.rating === "good" ? "#16a34a" : r.rating === "hard" ? "#ea580c" : "#dc2626",
+                color: r.rating === "easy" ? "#075985" : r.rating === "good" ? "#166534" : r.rating === "hard" ? "#9a3412" : "#b91c1c",
               }}>
                 {r.rating.charAt(0).toUpperCase() + r.rating.slice(1)}
               </span>
@@ -107,9 +113,9 @@ function SessionComplete({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function StudySession({ dashboardData, langPair, sessionTitle }: StudySessionProps) {
+export function StudySession({ dashboardData: _dashboardData, langPair, sessionTitle }: StudySessionProps) {
   const { showXp, showSuccess } = useToast();
-  const { userId, progressStore, profileRepo, achievementRepo, goalRepo } = useAppContext();
+  const { userId, progressStore, studyRepo, refresh, patchSnapshot } = useAppContext();
 
   const [cards, setCards]           = useState<SessionCard[]>([]);
   const [cardIndex, setCardIndex]   = useState(0);
@@ -117,52 +123,107 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
   const [isLoading, setIsLoading]   = useState(true);
   const [results, setResults]       = useState<SessionResult[]>([]);
   const [isDone, setIsDone]         = useState(false);
+  const [completion, setCompletion] = useState<StudyCompletionResult | null>(null);
+  const [reviewError, setReviewError] = useState(false);
+  const [completionError, setCompletionError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [reverseDirection, setReverseDirection] = useState(false);
   const [sessionKey, setSessionKey] = useState(0);
+  const [loadError, setLoadError] = useState<{ source: "deck" | "progress"; error: unknown } | null>(null);
+  const [isEmpty, setIsEmpty] = useState(false);
+  const stateHeadingRef = useRef<HTMLHeadingElement>(null);
 
   const progressRef = useRef<Record<string, import("@1000words/engine").FsrsState>>({});
   const startTimesRef = useRef<Record<string, number>>({});
+  const sessionIdRef = useRef(crypto.randomUUID());
+  const sessionStartedAtRef = useRef(new Date().toISOString());
+  const pendingRef = useRef(false);
+  const pendingReviewRef = useRef<RecordCardReviewCommand | null>(null);
+  const completionCommandRef = useRef<CompleteStudySessionCommand | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const activeCardIdRef = useRef<string | undefined>(undefined);
+  const sessionGenerationRef = useRef(0);
+  const sessionIdentityRef = useRef("");
+  const sessionIdentity = `${langPair}:${sessionKey}`;
+  if (sessionIdentityRef.current !== sessionIdentity) {
+    sessionIdentityRef.current = sessionIdentity;
+    sessionGenerationRef.current += 1;
+  }
 
   const [micState, setMicState] = useState<"idle" | "listening" | "match" | "no-match" | "error">("idle");
   const micResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const speechSupported = useRef(isSpeechRecognitionSupported()).current;
 
   useEffect(() => {
+    let cancelled = false;
     setIsLoading(true);
+    setLoadError(null);
+    setIsEmpty(false);
+    setCards([]);
+    setCardIndex(0);
+    setIsFlipped(false);
+    setResults([]);
+    setIsDone(false);
+    setCompletion(null);
+    setReviewError(false);
+    setCompletionError(false);
+    setIsSubmitting(false);
+    setReverseDirection(false);
+    setMicState("idle");
+    sessionIdRef.current = crypto.randomUUID();
+    sessionStartedAtRef.current = new Date().toISOString();
+    pendingRef.current = false;
+    pendingReviewRef.current = null;
+    completionCommandRef.current = null;
+    progressRef.current = {};
+    startTimesRef.current = {};
+    if (micResetRef.current) {
+      clearTimeout(micResetRef.current);
+      micResetRef.current = null;
+    }
     loadWordsForLangPair(langPair)
       .then(async (words) => {
-        let progress: Record<string, import("@1000words/engine").FsrsState> = {};
         try {
-          progress = await progressStore.getProgress(userId, langPair as import("@1000words/content").LangPair);
-        } catch (err) {
-          console.warn("[StudySession] Failed to load progress, starting fresh:", err);
-        }
-        progressRef.current = progress;
+          const progress = await progressStore.getProgress(userId, langPair as import("@1000words/content").LangPair);
+          if (cancelled) return;
+          progressRef.current = progress;
 
-        const ordered = buildSession(words as unknown as Card[], progress, {
-          now: new Date(),
-          newCardsPerDay: 10,
-          maxCards: 20,
-        });
-        const sessionWords = ordered.length > 0 ? ordered : words.slice(0, 20);
-        setCards((sessionWords as WordEntry[]).map((w, i) => ({ ...w, cardKey: `${w.id}-${i}` })));
+          const ordered = buildSession(words as Card[], progress, {
+            now: new Date(),
+            newCardsPerDay: 10,
+            maxCards: 20,
+          });
+          if (ordered.length === 0) {
+            setIsEmpty(true);
+          } else {
+            startTimesRef.current[ordered[0]!.id] = Date.now();
+            setCards(ordered.map((w, i) => ({ ...w, cardKey: `${w.id}-${i}` })));
+          }
+        } catch (err) {
+          if (cancelled) return;
+          console.error("[StudySession] Failed to load progress:", err);
+          setLoadError({ source: "progress", error: err });
+        }
         setIsLoading(false);
       })
-      .catch(() => {
-        const fallback: SessionCard[] = Array.from({ length: 15 }, (_, i) => ({
-          id: `fb-${i}`, langPair, word: `Word ${i + 1}`, translation: `Translation ${i + 1}`,
-          partOfSpeech: "noun", exampleSentence: `Example ${i + 1}.`, exampleTranslation: `Example ${i + 1}.`,
-          audio: "", cardKey: `fb-${i}`,
-        }));
-        setCards(fallback);
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        console.error("[StudySession] Failed to load deck:", err);
+        setLoadError({ source: "deck", error: err });
         setIsLoading(false);
       });
+    return () => { cancelled = true; };
   }, [langPair, sessionKey, userId, progressStore]);
 
+  useEffect(() => {
+    if (loadError || isEmpty) stateHeadingRef.current?.focus();
+  }, [loadError, isEmpty]);
+
   const currentCard = cards[cardIndex];
+  activeCardIdRef.current = currentCard?.id;
+  const reverseSupported = getLanguage(langPair)?.supportedDirections.includes("production") ?? false;
   const totalCards  = cards.length;
   const progress    = totalCards > 0 ? (cardIndex / totalCards) * 100 : 0;
-  const maxXp       = totalCards * 15;
 
   const playCardAudio = () => {
     if (!currentCard?.audio || !audioRef.current) return;
@@ -181,99 +242,115 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
 
   const handleMicPress = async () => {
     if (!currentCard || micState === "listening") return;
+    const requestedCardId = currentCard.id;
+    const generation = sessionGenerationRef.current;
     if (micResetRef.current) clearTimeout(micResetRef.current);
     setMicState("listening");
     try {
       const transcript = await recognizeSpeech(langPair);
+      if (generation !== sessionGenerationRef.current || activeCardIdRef.current !== requestedCardId) return;
       const matched = isCloseMatch(transcript, currentCard.word);
       setMicState(matched ? "match" : "no-match");
     } catch (err) {
+      if (generation !== sessionGenerationRef.current || activeCardIdRef.current !== requestedCardId) return;
       console.warn("[StudySession] Speech recognition failed:", err);
       setMicState("error");
     }
     micResetRef.current = setTimeout(() => setMicState("idle"), 2500);
   };
 
-  const handleRating = (rating: Rating) => {
-    if (!currentCard) return;
-
-    const now = new Date();
-    const elapsedMs = now.getTime() - (startTimesRef.current[currentCard.id] ?? now.getTime());
-
-    if (!currentCard.id.startsWith("fb-")) {
-      const currentState = progressRef.current[currentCard.id] ?? initialState(now);
-      const nextState = scheduleReview(currentState, rating, now);
-      progressRef.current = { ...progressRef.current, [currentCard.id]: nextState };
-      progressStore.upsertProgress(userId, currentCard.id, nextState).catch(console.error);
-      progressStore.logReview(userId, currentCard.id, rating, elapsedMs).catch(console.error);
-    }
-
-    const newResults = [...results, { cardId: currentCard.id, word: currentCard.word, rating }];
-    setResults(newResults);
-
-    if (cardIndex >= totalCards - 1) {
-      const correct = newResults.filter((r) => r.rating === "good" || r.rating === "easy").length;
-      const accuracy = Math.round((correct / newResults.length) * 100);
-      const earnedXp = Math.round(maxXp * (accuracy / 100));
-
-      if (earnedXp > 0) {
-        profileRepo.addXp(userId, earnedXp).catch(console.error);
-      }
-      goalRepo.incrementGoal(userId, "cards_reviewed", newResults.length).catch(console.error);
-
-      (async () => {
-        try {
-          const [userAchievements, profile] = await Promise.all([
-            achievementRepo.getUserAchievements(userId),
-            profileRepo.getProfile(userId),
-          ]);
-          const earned = new Set(userAchievements.map((a) => a.achievementId));
-          const lessonsCompleted = dashboardData.lessons.filter((l) => l.status === "completed").length;
-          const newlyUnlocked = checkAchievements(
-            dashboardData.achievements,
-            earned,
-            {
-              cardsReviewed: newResults.length,
-              accuracy,
-              xpEarned: earnedXp,
-              hour: new Date().getHours(),
-              streakCount: profile.streakCount,
-              totalCardsReviewedAllTime: newResults.length,
-              lessonsCompleted,
-            },
-          );
-          for (const achId of newlyUnlocked) {
-            await achievementRepo.unlock(userId, achId);
-            const ach = dashboardData.achievements.find((a) => a.achievementId === achId);
-            if (ach) showSuccess(`Achievement unlocked: ${ach.title}`, ach.description);
-          }
-        } catch (err) {
-          console.error("[StudySession] Achievement check failed:", err);
-        }
-      })();
-
-      showXp(earnedXp, `${sessionTitle} session complete`);
-      if (accuracy === 100) showSuccess("Perfect score!", "You aced every card!");
+  const completeSession = async (generation = sessionGenerationRef.current) => {
+    const command = completionCommandRef.current ?? {
+      sessionId: sessionIdRef.current,
+      langPair: langPair as import("@1000words/content").LangPair,
+      startedAt: sessionStartedAtRef.current,
+      completedAt: new Date().toISOString(),
+    };
+    completionCommandRef.current = command;
+    setIsSubmitting(true);
+    try {
+      const value = await studyRepo.completeStudySession(command);
+      if (generation !== sessionGenerationRef.current) return;
+      setCompletion(value);
+      patchSnapshot({ profile: value.profile, goals: value.goals });
+      await refresh(["profile", "goals", "achievements", "stats", "leaderboard"]);
+      if (generation !== sessionGenerationRef.current) return;
+      showXp(value.totalXpAwarded, `${sessionTitle} session complete`);
+      if (value.accuracy === 100) showSuccess("Perfect score!", "You aced every card!");
+      setCompletionError(false);
       setIsDone(true);
-    } else {
-      const nextCard = cards[cardIndex + 1];
-      if (nextCard) startTimesRef.current[nextCard.id] = Date.now();
-      setCardIndex((i) => i + 1);
-      setIsFlipped(false);
+    } catch (error) {
+      if (generation !== sessionGenerationRef.current) return;
+      console.error("[StudySession] Completion failed:", error);
+      setCompletionError(true);
+    } finally {
+      if (generation === sessionGenerationRef.current) setIsSubmitting(false);
     }
   };
 
-  const stateRef = useRef({ isFlipped, isDone, isLoading });
-  stateRef.current = { isFlipped, isDone, isLoading };
+  const submitReview = async (command: RecordCardReviewCommand) => {
+    if (pendingRef.current) return;
+    const generation = sessionGenerationRef.current;
+    pendingRef.current = true;
+    setIsSubmitting(true);
+    setReviewError(false);
+    try {
+      const recorded = await studyRepo.recordCardReview(command);
+      if (generation !== sessionGenerationRef.current) return;
+      progressRef.current = { ...progressRef.current, [command.cardId]: recorded.progress };
+      pendingReviewRef.current = null;
+      const newResults = [...results, { cardId: command.cardId, word: currentCard!.word, rating: command.rating }];
+      setResults(newResults);
+      if (cardIndex >= totalCards - 1) await completeSession(generation);
+      else {
+        const nextCard = cards[cardIndex + 1];
+        if (nextCard) startTimesRef.current[nextCard.id] = Date.now();
+        setCardIndex((i) => i + 1);
+        setIsFlipped(false);
+      }
+    } catch (error) {
+      if (generation !== sessionGenerationRef.current) return;
+      console.error("[StudySession] Review failed:", error);
+      setReviewError(true);
+    } finally {
+      if (generation === sessionGenerationRef.current) {
+        pendingRef.current = false;
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  const handleRating = (rating: Rating) => {
+    if (!currentCard || pendingRef.current || pendingReviewRef.current || reviewError || completionError || isSubmitting) return;
+    const now = new Date();
+    const currentState = progressRef.current[currentCard.id] ?? initialState(now);
+    const command: RecordCardReviewCommand = {
+      reviewId: crypto.randomUUID(),
+      sessionId: sessionIdRef.current,
+      langPair: langPair as import("@1000words/content").LangPair,
+      cardId: currentCard.id,
+      rating,
+      elapsedMs: Math.min(
+        300_000,
+        Math.max(250, now.getTime() - (startTimesRef.current[currentCard.id] ?? now.getTime())),
+      ),
+      nextState: scheduleReview(currentState, rating, now),
+    };
+    pendingReviewRef.current = command;
+    void submitReview(command);
+  };
+
+  const stateRef = useRef({ isFlipped, isDone, isLoading, isSubmitting, reviewError, completionError });
+  stateRef.current = { isFlipped, isDone, isLoading, isSubmitting, reviewError, completionError };
 
   const handleRatingRef = useRef(handleRating);
   handleRatingRef.current = handleRating;
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const { isFlipped, isDone, isLoading } = stateRef.current;
-      if (isDone || isLoading) return;
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const { isFlipped, isDone, isLoading, isSubmitting, reviewError, completionError } = stateRef.current;
+      if (isDone || isLoading || isSubmitting || reviewError || completionError) return;
+      if (e.target instanceof Element && e.target.closest("button, input, textarea, select, a, [contenteditable='true']")) return;
       switch (e.key) {
         case "Escape": e.preventDefault(); navigate("/dashboard"); break;
         case " ": case "Enter": e.preventDefault(); setIsFlipped((f) => !f); break;
@@ -292,15 +369,51 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
     setSessionKey((k) => k + 1);
   };
 
-  if (isDone) {
+  if (isDone && completion) {
     return (
       <SessionComplete
         results={results}
         sessionTitle={sessionTitle}
-        maxXp={maxXp}
+        completion={completion}
         onRestart={handleRestart}
         onBack={() => navigate("/dashboard")}
       />
+    );
+  }
+
+  if (loadError) {
+    const isProgress = loadError.source === "progress";
+    const deckKind = loadError.error instanceof DeckLoadError ? loadError.error.kind : "network";
+    const detail = isProgress
+      ? "Your saved progress could not be loaded. No study data has been changed."
+      : deckKind === "invalid-json" || deckKind === "invalid-schema"
+        ? "The lesson file is invalid and cannot be studied safely."
+        : deckKind === "unsupported-language"
+          ? "This language pair is not supported."
+          : "The lesson cards could not be loaded. Please check your connection and try again.";
+    return (
+      <div className="study-screen page-enter" style={{ alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+        <section role="alert" style={{ width: "min(30rem, 100%)", textAlign: "center" }}>
+          <h1 ref={stateHeadingRef} tabIndex={-1}>{isProgress ? "Progress unavailable" : "Cards unavailable"}</h1>
+          <p>{sessionTitle}: {detail}</p>
+          <div style={{ display: "flex", gap: "0.75rem", justifyContent: "center", flexWrap: "wrap" }}>
+            <button onClick={() => setSessionKey((key) => key + 1)}>Retry</button>
+            <button onClick={() => navigate("/dashboard")}>Return Home</button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (isEmpty) {
+    return (
+      <div className="study-screen page-enter" style={{ alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+        <section style={{ width: "min(30rem, 100%)", textAlign: "center" }}>
+          <h1 ref={stateHeadingRef} tabIndex={-1}>Nothing due</h1>
+          <p>There are no cards scheduled for this session.</p>
+          <button onClick={() => navigate("/dashboard")}>Return Home</button>
+        </section>
+      </div>
     );
   }
 
@@ -324,6 +437,20 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
         >
           ✕ Exit
         </button>
+        {appConfig.reverseStudyEnabled && reverseSupported && (
+          <button
+            type="button"
+            aria-pressed={reverseDirection}
+            aria-label="Switch study direction"
+            onClick={() => {
+              setReverseDirection((value) => !value);
+              setIsFlipped(false);
+            }}
+            style={{ background: "var(--surface)", color: "var(--text)", border: "1px solid var(--border)", padding: "0.3rem 0.55rem", fontSize: "0.75rem", minWidth: "auto" }}
+          >
+            {reverseDirection ? "English → Target" : "Target → English"}
+          </button>
+        )}
         <div style={{ flex: 1, textAlign: "center", fontWeight: 700, fontSize: "0.9rem" }}>
           {sessionTitle}
         </div>
@@ -332,32 +459,41 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
         </div>
       </div>
 
-      <div className="study-progress-bar">
+      <div
+        className="study-progress-bar"
+        role="progressbar"
+        aria-label="Study session progress"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(progress)}
+      >
         <div className="study-progress-fill" style={{ width: `${progress}%` }} />
       </div>
 
       <div className="study-card-area">
         <div
           className="flashcard-wrapper"
-          onClick={() => setIsFlipped((f) => !f)}
-          role="button"
-          tabIndex={0}
-          aria-label={isFlipped ? "Showing answer — click to flip back" : "Click to reveal answer"}
-          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setIsFlipped((f) => !f); } }}
+          onClick={() => { if (!isFlipped) setIsFlipped(true); }}
+          role={isFlipped ? undefined : "button"}
+          tabIndex={isFlipped ? undefined : 0}
+          aria-label={isFlipped ? undefined : "Click to reveal answer"}
+          onKeyDown={(e) => { if (!isFlipped && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); setIsFlipped(true); } }}
         >
           <div className={`flashcard${isFlipped ? " flipped" : ""}`}>
-            <div className="flashcard-face flashcard-front">
+            <div className="flashcard-face flashcard-front" aria-hidden={isFlipped}>
               <span className="flashcard-pos">{currentCard.partOfSpeech}</span>
-              <div className="flashcard-word">{currentCard.word}</div>
+              <div className="flashcard-word">{reverseDirection ? currentCard.translation : currentCard.word}</div>
               <div className="flashcard-hint">Tap to reveal · <span className="kbd">Space</span></div>
             </div>
-            <div className="flashcard-face flashcard-back">
+            <div className="flashcard-face flashcard-back" aria-hidden={!isFlipped}>
               <span className="flashcard-pos">{currentCard.partOfSpeech}</span>
               <div className="flashcard-word" style={{ color: "var(--accent)" }}>
                 {currentCard.word}
                 {currentCard.audio && (
                   <button
                     onClick={(e) => { e.stopPropagation(); playCardAudio(); }}
+                    disabled={!isFlipped}
+                    tabIndex={isFlipped ? 0 : -1}
                     aria-label="Replay pronunciation"
                     style={{ background: "transparent", border: "none", color: "var(--accent)", cursor: "pointer", padding: "0 0 0 0.4em", minWidth: "auto", verticalAlign: "middle" }}
                   >
@@ -367,7 +503,8 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
                 {speechSupported && (
                   <button
                     onClick={(e) => { e.stopPropagation(); handleMicPress(); }}
-                    disabled={micState === "listening"}
+                    disabled={!isFlipped || micState === "listening"}
+                    tabIndex={isFlipped ? 0 : -1}
                     aria-label="Practice saying this word"
                     style={{
                       background: "transparent", border: "none", padding: "0 0 0 0.3em", minWidth: "auto", verticalAlign: "middle",
@@ -409,10 +546,32 @@ export function StudySession({ dashboardData, langPair, sessionTitle }: StudySes
 
         {currentCard.audio && <audio ref={audioRef} src={audioUrl(currentCard)} preload="none" />}
 
-        {isFlipped ? (
-          <div className="study-rating-row" role="group" aria-label="Rate this card">
+        {reviewError && (
+          <div role="alert" style={{ textAlign: "center", color: "var(--status-warn)" }}>
+            <p style={{ margin: "0 0 0.5rem" }}>This review could not be saved. Your card has not advanced.</p>
+            <button
+              type="button"
+              onClick={() => { if (pendingReviewRef.current) void submitReview(pendingReviewRef.current); }}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Retrying…" : "Retry review"}
+            </button>
+          </div>
+        )}
+
+        {completionError && (
+          <div role="alert" style={{ textAlign: "center", color: "var(--status-warn)" }}>
+            <p style={{ margin: "0 0 0.5rem" }}>Your session results are saved, but completion could not be finalized.</p>
+            <button type="button" onClick={() => void completeSession()} disabled={isSubmitting}>
+              {isSubmitting ? "Retrying…" : "Retry completion"}
+            </button>
+          </div>
+        )}
+
+        {isFlipped && !reviewError && !completionError ? (
+          <div className="study-rating-row" role="group" aria-label="Rate this card" aria-busy={isSubmitting}>
             {(["again", "hard", "good", "easy"] as Rating[]).map((r, i) => (
-              <button key={r} className={`rating-btn rating-${r}`} onClick={() => handleRating(r)} aria-label={`Rate as ${r}`}>
+              <button key={r} className={`rating-btn rating-${r}`} onClick={() => handleRating(r)} aria-label={`Rate as ${r}`} disabled={isSubmitting}>
                 <span>{r.charAt(0).toUpperCase() + r.slice(1)}</span>
                 <span className="rating-key kbd">{i + 1}</span>
               </button>

@@ -1,12 +1,13 @@
 import { z } from "zod";
+import { getLanguage, LANG_PAIRS, type LangPair } from "./languages";
 
 /**
  * The set of language pairs the app ships with. Each pair is "<source>-<target>"
  * where source is always the learner's known language (English for now).
  */
-export const LANG_PAIRS = ["en-es", "en-zh", "en-ko", "en-ja"] as const;
 export const LangPairSchema = z.enum(LANG_PAIRS);
-export type LangPair = z.infer<typeof LangPairSchema>;
+export { LANG_PAIRS };
+export type { LangPair };
 
 /**
  * A single learnable item: one of the ~1000 most common words/phrases in the
@@ -41,5 +42,31 @@ export const CardSchema = z.object({
 });
 export type Card = z.infer<typeof CardSchema>;
 
-export const CardDeckSchema = z.array(CardSchema);
+export const CardDeckSchema = z.array(CardSchema).superRefine((cards, context) => {
+  const ids = new Set<string>();
+  cards.forEach((card, index) => {
+    if (ids.has(card.id)) {
+      context.addIssue({ code: "custom", message: `Duplicate card id: ${card.id}`, path: [index, "id"] });
+    }
+    ids.add(card.id);
+
+    const registration = getLanguage(card.langPair);
+    if (!registration) return;
+    if (!card.id.startsWith(`${registration.cardIdPrefix}-`)) {
+      context.addIssue({
+        code: "custom",
+        message: `Card id must use the ${registration.cardIdPrefix}- prefix`,
+        path: [index, "id"],
+      });
+    }
+    const escapedDirectory = registration.audioDirectory.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    if (!new RegExp(`^${escapedDirectory}/[^/]+\\.mp3$`).test(card.audio)) {
+      context.addIssue({
+        code: "custom",
+        message: `Audio must be directly under ${registration.audioDirectory}`,
+        path: [index, "audio"],
+      });
+    }
+  });
+});
 export type CardDeck = z.infer<typeof CardDeckSchema>;

@@ -75,6 +75,10 @@ export function ObjectivesHub({ dashboardData }: ObjectivesHubProps) {
               return (
                 <div
                   key={goal.goalId}
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={isExpanded}
+                  aria-label={`${goal.title}: ${goal.progress} of ${goal.target}`}
                   style={{
                     padding: "1rem 0",
                     borderTop: idx > 0 ? "1px solid var(--border-subtle)" : "none",
@@ -82,6 +86,12 @@ export function ObjectivesHub({ dashboardData }: ObjectivesHubProps) {
                     transition: "background var(--t-base)",
                   }}
                   onClick={() => setExpandedGoal(isExpanded ? null : goal.goalId)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setExpandedGoal(isExpanded ? null : goal.goalId);
+                    }
+                  }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = "var(--surface-raised)";
                   }}

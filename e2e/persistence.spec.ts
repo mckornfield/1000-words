@@ -1,7 +1,8 @@
 import { test, expect } from "@playwright/test";
+import { gotoApp } from "./helpers/app";
 
 async function signIn(page: import("@playwright/test").Page) {
-  await page.goto("/login");
+  await gotoApp(page, "/login");
   await page.getByRole("button", { name: "Sign In" }).click();
   await expect(page).toHaveURL(/dashboard/);
 }

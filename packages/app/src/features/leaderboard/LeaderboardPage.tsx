@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
 import { navigate } from "../../lib/router";
-import { useAppContext } from "../../data/AppContext";
+import { useAppContext, useAppState } from "../../data/AppContext";
 import type { LeaderboardEntry } from "../../data/types";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
 import { TrophyIcon, GoldMedalIcon, SilverMedalIcon, BronzeMedalIcon } from "../shared/icons";
-import { useToast } from "../shared/Toast";
+
 import type { DashboardData, StoreItem } from "../../data/account/repository";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -292,29 +291,11 @@ function Separator() {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function LeaderboardPage({ dashboardData }: { dashboardData: DashboardData }) {
-  const { leaderboardRepo, userId } = useAppContext();
-  const toast = useToast();
-
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [currentEntry, setCurrentEntry] = useState<LeaderboardEntry | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([
-      leaderboardRepo.getTopN(50),
-      leaderboardRepo.getCurrentUserEntry(userId),
-    ])
-      .then(([top, me]) => {
-        setEntries(top);
-        setCurrentEntry(me);
-      })
-      .catch(() => {
-        toast.showError("Could not load leaderboard. Please try again.");
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, [leaderboardRepo, userId]);
+  const { userId } = useAppContext();
+  const { snapshot, pending } = useAppState();
+  const entries = snapshot.leaderboard.entries;
+  const currentEntry = snapshot.leaderboard.currentUser;
+  const loading = pending.has("leaderboard") && entries.length === 0;
 
   const currentUserInTop = entries.some((e) => e.userId === userId);
   const shouldPinUser = currentEntry !== null && !currentUserInTop;

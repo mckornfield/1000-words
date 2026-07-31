@@ -1,12 +1,31 @@
+import "@testing-library/jest-dom/vitest";
+import { cleanup } from "@testing-library/react";
+import { afterEach } from "vitest";
 import { existsSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { resolve } from "node:path";
 
-/**
- * Load the repo-root `.env` into process.env so tests (RLS integration,
- * future Supabase-touching tests) read the same values the Vite app does.
- * Uses Node 22's built-in env-file loader — no dotenv dependency.
- */
-const rootEnv = fileURLToPath(new URL("../../.env", import.meta.url));
-if (existsSync(rootEnv)) {
-  process.loadEnvFile(rootEnv);
+const rootEnv = resolve(process.cwd(), "../../.env");
+if (existsSync(rootEnv)) process.loadEnvFile(rootEnv);
+
+afterEach(() => cleanup());
+
+Object.defineProperty(window, "matchMedia", {
+  configurable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  }),
+});
+
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
 }
+Object.defineProperty(window, "ResizeObserver", { configurable: true, value: ResizeObserverStub });

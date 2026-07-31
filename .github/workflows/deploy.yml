@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Release to GitHub Pages
 
 on:
   push:
@@ -7,36 +7,183 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
+env:
+  NODE_VERSION: "22"
+  BASE_URL: "/1000-words/"
+
 jobs:
-  deploy:
+  release-ref:
     runs-on: ubuntu-latest
+    steps:
+      - name: Require the main branch for every deployment
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" != "refs/heads/main" ]]; then
+            echo "Refusing to deploy ref '${GITHUB_REF}'; releases are restricted to refs/heads/main." >&2
+            exit 1
+          fi
+
+  quality:
+    needs: release-ref
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm --filter @1000words/content validate
+      - run: pnpm test:artifact-validator
+
+  demo-pages-build:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build demo-enabled Pages release candidate once
+        run: pnpm --filter @1000words/app build
+        env:
+          VITE_DEMO_LOGIN: "true"
+      - name: Validate Pages release candidate artifact
+        run: pnpm validate:dist
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pages-demo-dist
+          path: packages/app/dist
+          if-no-files-found: error
+          retention-days: 7
+
+  e2e-demo:
+    needs: demo-pages-build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: pages-demo-dist
+          path: packages/app/dist
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Test the downloaded demo-enabled Pages release candidate
+        run: pnpm e2e
+        env:
+          CI: "true"
+      - name: Upload Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-failure-release-e2e
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+  supabase-integration:
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: supabase/setup-cli@ab058987d8d6c725971f6cf9d0b5c98467e30bd1 # v1.7.1
+        with:
+          version: 2.109.1
+      - name: Start and reset local Supabase
+        run: |
+          supabase start
+          supabase db reset
+          supabase status -o env > /tmp/supabase.env
+          source /tmp/supabase.env
+          echo "SUPABASE_URL=${API_URL:-http://127.0.0.1:54321}" >> "$GITHUB_ENV"
+          echo "VITE_SUPABASE_URL=${API_URL:-http://127.0.0.1:54321}" >> "$GITHUB_ENV"
+          echo "SUPABASE_ANON_KEY=${ANON_KEY}" >> "$GITHUB_ENV"
+          echo "VITE_SUPABASE_ANON_KEY=${ANON_KEY}" >> "$GITHUB_ENV"
+          echo "SUPABASE_SERVICE_ROLE_KEY=${SERVICE_ROLE_KEY}" >> "$GITHUB_ENV"
+      - name: Run RLS, RPC, and idempotency integration suites without skips
+        run: |
+          pnpm --filter @1000words/app exec vitest run \
+            src/data/progressStore.rls.test.ts \
+            src/data/profile/rewardRpcs.rls.test.ts \
+            src/data/secureBoundary.rls.test.ts \
+            --reporter=json --outputFile=/tmp/rls-results.json
+          EXPECTED_TEST_COUNT=29 node -e 'const r=require("/tmp/rls-results.json"); const expected=Number(process.env.EXPECTED_TEST_COUNT); if (expected <= 0 || r.numTotalTests !== expected || r.numPendingTests || r.numFailedTests || r.numPassedTests !== expected) { console.error({ expected, ...r }); process.exit(1) } console.log(`RLS integration: ${r.numPassedTests}/${expected} passed, 0 skipped`)'
+      - name: Run Supabase smoke
+        run: pnpm --filter @1000words/app supabase:smoke
+
+  deploy:
+    needs: [quality, demo-pages-build, e2e-demo, supabase-integration]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          node-version: 22
+          name: pages-demo-dist
+          path: dist
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: dist
+      - uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
+        id: deployment
+
+  hosted-smoke:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @1000words/app build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Smoke deployed Pages environment
+        run: pnpm e2e:hosted
         env:
-          VITE_DEMO_LOGIN: "false"
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          BASE_URL: "/1000-words/"
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+          CI: "true"
+          PLAYWRIGHT_BASE_URL: ${{ needs.deploy.outputs.page_url }}
+      - name: Upload hosted Playwright failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          path: packages/app/dist
-      - uses: actions/deploy-pages@v4
-        id: deployment
+          name: playwright-failure-hosted
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 7

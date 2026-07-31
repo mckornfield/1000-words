@@ -12,7 +12,8 @@ export interface SessionMetrics {
 
 /**
  * Returns IDs of achievements newly unlocked by this session.
- * Pure function — no I/O. Caller persists results via achievementRepo.unlock().
+ * Pure function for demo previews and deterministic rule tests. Production persistence
+ * is owned by the atomic study-completion command.
  */
 export function checkAchievements(
   catalog: Achievement[],

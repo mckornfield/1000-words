@@ -1,26 +1,4 @@
-/**
- * Routing utilities for client-side navigation with support for parameterized routes.
- *
- * Supported route patterns:
- * - /login
- * - /dashboard
- * - /lessons (list)
- * - /lessons/:lessonId (detail)
- * - /lessons/:lessonId/study (study/review session)
- * - /achievements (gallery)
- * - /achievements/:achievementId (detail)
- * - /shop (browse)
- * - /shop/:itemId (item detail)
- * - /profile (overview)
- * - /profile/stats (stats & history)
- * - /profile/customization (cosmetics)
- * - /objectives (daily goals & milestones hub)
- * - /objectives/:objectiveId (detail)
- * - /leaderboard (leaderboard rankings)
- */
-
-// ─── Route Types ──────────────────────────────────────────────────────────
-
+/** Small dependency-free router used by the web and Capacitor shells. */
 export type RoutePath =
   | "/login"
   | "/dashboard"
@@ -38,7 +16,8 @@ export type RoutePath =
   | "/profile/settings"
   | "/objectives"
   | "/objectives/:objectiveId"
-  | "/leaderboard";
+  | "/leaderboard"
+  | "/not-found";
 
 export interface RouteParams {
   langPair?: string;
@@ -47,233 +26,141 @@ export interface RouteParams {
   itemId?: string;
   objectiveId?: string;
 }
+export interface ParsedRoute { path: RoutePath; params: RouteParams }
 
-export interface ParsedRoute {
-  path: RoutePath;
-  params: RouteParams;
+type ParamName = keyof RouteParams;
+type RouteDefinition = { path: Exclude<RoutePath, "/not-found">; segments: Array<string | { param: ParamName }> };
+
+const ROUTES: RouteDefinition[] = [
+  { path: "/login", segments: ["login"] },
+  { path: "/dashboard", segments: ["dashboard"] },
+  { path: "/study/:langPair", segments: ["study", { param: "langPair" }] },
+  { path: "/lessons", segments: ["lessons"] },
+  { path: "/lessons/:lessonId", segments: ["lessons", { param: "lessonId" }] },
+  { path: "/lessons/:lessonId/study", segments: ["lessons", { param: "lessonId" }, "study"] },
+  { path: "/achievements", segments: ["achievements"] },
+  { path: "/achievements/:achievementId", segments: ["achievements", { param: "achievementId" }] },
+  { path: "/shop", segments: ["shop"] },
+  { path: "/shop/:itemId", segments: ["shop", { param: "itemId" }] },
+  { path: "/profile", segments: ["profile"] },
+  { path: "/profile/stats", segments: ["profile", "stats"] },
+  { path: "/profile/customization", segments: ["profile", "customization"] },
+  { path: "/profile/settings", segments: ["profile", "settings"] },
+  { path: "/objectives", segments: ["objectives"] },
+  { path: "/objectives/:objectiveId", segments: ["objectives", { param: "objectiveId" }] },
+  { path: "/leaderboard", segments: ["leaderboard"] },
+];
+
+export function normalizeBasePath(base: string): string {
+  const trimmed = base.trim();
+  if (!trimmed || trimmed === "/") return "";
+  return `/${trimmed.replace(/^\/+|\/+$/g, "")}`;
 }
 
-// ─── Route Parsing ────────────────────────────────────────────────────────
-
-/**
- * Parse the current URL pathname into a structured route object.
- * If the path doesn't match any known route, returns "/login".
- */
-export function parseRoute(): ParsedRoute {
-  // Strip the Vite base path (e.g. '/1000-words') so the router sees clean paths
-  // regardless of whether the app is hosted at the root or a sub-path.
-  const base = import.meta.env.BASE_URL.replace(/\/$/, ""); // '' or '/1000-words'
-  const fullPathname = window.location.pathname;
-  const rawPathname = base && fullPathname.startsWith(base)
-    ? fullPathname.slice(base.length) || "/"
-    : fullPathname;
-  const rawSegments = rawPathname.split("/").filter(Boolean);
-  // Use lowercase only for structural matching, not for parameter values
-  const segments = rawSegments.map((s) => s.toLowerCase());
-
-  // Match against known route patterns
-  if (segments.length === 0 || segments[0] === "login") {
-    return { path: "/login", params: {} };
-  }
-
-  if (segments[0] === "dashboard") {
-    return { path: "/dashboard", params: {} };
-  }
-
-  if (segments[0] === "study" && segments.length >= 2) {
-    return { path: "/study/:langPair", params: { langPair: rawSegments[1] } };
-  }
-
-  if (segments[0] === "lessons") {
-    if (segments.length === 1) {
-      return { path: "/lessons", params: {} };
-    }
-    if (segments.length === 2) {
-      return { path: "/lessons/:lessonId", params: { lessonId: rawSegments[1] } };
-    }
-    if (segments.length === 3 && segments[2] === "study") {
-      return { path: "/lessons/:lessonId/study", params: { lessonId: rawSegments[1] } };
-    }
-  }
-
-  if (segments[0] === "achievements") {
-    if (segments.length === 1) {
-      return { path: "/achievements", params: {} };
-    }
-    if (segments.length === 2) {
-      return { path: "/achievements/:achievementId", params: { achievementId: rawSegments[1] } };
-    }
-  }
-
-  if (segments[0] === "shop") {
-    if (segments.length === 1) {
-      return { path: "/shop", params: {} };
-    }
-    if (segments.length === 2) {
-      return { path: "/shop/:itemId", params: { itemId: rawSegments[1] } };
-    }
-  }
-
-  if (segments[0] === "profile") {
-    if (segments.length === 1) {
-      return { path: "/profile", params: {} };
-    }
-    if (segments.length === 2 && segments[1] === "stats") {
-      return { path: "/profile/stats", params: {} };
-    }
-    if (segments.length === 2 && segments[1] === "customization") {
-      return { path: "/profile/customization", params: {} };
-    }
-    if (segments.length === 2 && segments[1] === "settings") {
-      return { path: "/profile/settings", params: {} };
-    }
-  }
-
-  if (segments[0] === "objectives") {
-    if (segments.length === 1) {
-      return { path: "/objectives", params: {} };
-    }
-    if (segments.length === 2) {
-      return { path: "/objectives/:objectiveId", params: { objectiveId: rawSegments[1] } };
-    }
-  }
-
-  if (segments[0] === "leaderboard") {
-    return { path: "/leaderboard", params: {} };
-  }
-
-  // Unrecognized path — redirect to login
-  return { path: "/login", params: {} };
+export function stripBasePath(pathname: string, base: string): string | null {
+  const normalized = normalizeBasePath(base);
+  if (!normalized) return pathname.startsWith("/") ? pathname : `/${pathname}`;
+  if (pathname === normalized) return "/";
+  if (!pathname.startsWith(`${normalized}/`)) return null;
+  return pathname.slice(normalized.length);
 }
 
-// ─── Navigation ───────────────────────────────────────────────────────────
+function decodeSegment(value: string): string | null {
+  try { return decodeURIComponent(value); } catch { return null; }
+}
 
-/**
- * Navigate to a route, updating browser history and firing a synthetic popstate.
- * Checks if already on the route to avoid unnecessary updates.
- */
-export function navigate(route: RoutePath, params: RouteParams = {}): void {
-  let pathname: string = route;
+export function parseRoute(
+  pathname = window.location.pathname,
+  base = import.meta.env.BASE_URL,
+): ParsedRoute {
+  const stripped = stripBasePath(pathname, base);
+  if (stripped === null) return { path: "/not-found", params: {} };
+  const encodedSegments = stripped.split("/").filter(Boolean);
+  if (encodedSegments.length === 0) return { path: "/login", params: {} };
+  const decoded = encodedSegments.map(decodeSegment);
+  if (decoded.some((segment) => segment === null)) return { path: "/not-found", params: {} };
+  const segments = decoded as string[];
 
-  // Replace route parameters with actual values
-  if (route.includes(":langPair") && params.langPair) {
-    pathname = pathname.replace(":langPair", params.langPair);
+  for (const route of ROUTES) {
+    if (route.segments.length !== segments.length) continue;
+    const params: RouteParams = {};
+    const matches = route.segments.every((expected, index) => {
+      if (typeof expected === "string") return expected.toLowerCase() === segments[index]!.toLowerCase();
+      params[expected.param] = segments[index];
+      return true;
+    });
+    if (matches) return { path: route.path, params };
   }
-  if (route.includes(":lessonId") && params.lessonId) {
-    pathname = pathname.replace(":lessonId", params.lessonId);
-  }
-  if (route.includes(":achievementId") && params.achievementId) {
-    pathname = pathname.replace(":achievementId", params.achievementId);
-  }
-  if (route.includes(":itemId") && params.itemId) {
-    pathname = pathname.replace(":itemId", params.itemId);
-  }
-  if (route.includes(":objectiveId") && params.objectiveId) {
-    pathname = pathname.replace(":objectiveId", params.objectiveId);
-  }
+  return { path: "/not-found", params: {} };
+}
 
-  // Re-add the Vite base path (e.g. '/1000-words') that parseRoute() strips off
-  // when reading the URL — without this, pushState writes a path that's only
-  // valid at the domain root, breaking on reload/bookmark/share once deployed
-  // under a sub-path (GitHub Pages).
-  const base = import.meta.env.BASE_URL.replace(/\/$/, ""); // '' or '/1000-words'
-  const fullPathname = base + pathname;
+export function buildRoutePath(
+  route: RoutePath,
+  params: RouteParams = {},
+  base = import.meta.env.BASE_URL,
+): string {
+  const definition = ROUTES.find((candidate) => candidate.path === route);
+  if (!definition) throw new Error(`Unknown route: ${route}`);
+  const pathname = `/${definition.segments.map((segment) => {
+    if (typeof segment === "string") return segment;
+    const value = params[segment.param];
+    if (value === undefined || value === "") throw new Error(`Missing route parameter: ${segment.param}`);
+    return encodeURIComponent(value);
+  }).join("/")}`;
+  return `${normalizeBasePath(base)}${pathname}`;
+}
 
-  if (window.location.pathname === fullPathname) return;
-
-  window.history.pushState({}, "", fullPathname);
+export function navigate(
+  route: RoutePath,
+  params: RouteParams = {},
+  base = import.meta.env.BASE_URL,
+): void {
+  const pathname = buildRoutePath(route, params, base);
+  if (window.location.pathname === pathname) return;
+  window.history.pushState({}, "", pathname);
   window.dispatchEvent(new PopStateEvent("popstate"));
 }
 
-/**
- * Navigate back to the previous page using browser history.
- */
-export function navigateBack(): void {
-  window.history.back();
+/** Reconstruct the path encoded by public/404.html without interpreting it as a route. */
+export function restoreHostedPath(search: string, base = import.meta.env.BASE_URL): string | null {
+  if (!search.startsWith("?/")) return null;
+  const [encodedPath] = search.slice(1).split("&");
+  return `${normalizeBasePath(base)}${encodedPath!.replace(/~and~/g, "&")}`;
 }
 
-// ─── Route Guards ────────────────────────────────────────────────────────
+export function navigateBack(): void { window.history.back(); }
+export function requiresAuth(route: RoutePath): boolean { return route !== "/login"; }
 
-/**
- * Determine if a route requires authentication.
- * All routes except /login require a valid session.
- */
-export function requiresAuth(route: RoutePath): boolean {
-  return route !== "/login";
-}
-
-/**
- * Determine the "parent" route for breadcrumb navigation.
- */
 export function getParentRoute(currentRoute: RoutePath): RoutePath | null {
   if (currentRoute.startsWith("/lessons")) {
-    if (currentRoute === "/lessons/:lessonId/study") return "/lessons/:lessonId" as RoutePath;
-    if (currentRoute === "/lessons/:lessonId") return "/lessons" as RoutePath;
-    return "/dashboard" as RoutePath;
+    if (currentRoute === "/lessons/:lessonId/study") return "/lessons/:lessonId";
+    if (currentRoute === "/lessons/:lessonId") return "/lessons";
+    return "/dashboard";
   }
-  if (currentRoute.startsWith("/achievements")) {
-    if (currentRoute === "/achievements/:achievementId") return "/achievements" as RoutePath;
-    return "/dashboard" as RoutePath;
-  }
-  if (currentRoute.startsWith("/shop")) {
-    if (currentRoute === "/shop/:itemId") return "/shop" as RoutePath;
-    return "/dashboard" as RoutePath;
-  }
-  if (currentRoute.startsWith("/profile")) {
-    if (currentRoute === "/profile/stats" || currentRoute === "/profile/customization" || currentRoute === "/profile/settings") return "/profile" as RoutePath;
-    return "/dashboard" as RoutePath;
-  }
-  if (currentRoute.startsWith("/objectives")) {
-    if (currentRoute === "/objectives/:objectiveId") return "/objectives" as RoutePath;
-    return "/dashboard" as RoutePath;
-  }
-  if (currentRoute === "/leaderboard") return "/dashboard";
+  if (currentRoute.startsWith("/achievements")) return currentRoute === "/achievements/:achievementId" ? "/achievements" : "/dashboard";
+  if (currentRoute.startsWith("/shop")) return currentRoute === "/shop/:itemId" ? "/shop" : "/dashboard";
+  if (currentRoute.startsWith("/profile")) return currentRoute === "/profile" ? "/dashboard" : "/profile";
+  if (currentRoute.startsWith("/objectives")) return currentRoute === "/objectives/:objectiveId" ? "/objectives" : "/dashboard";
+  if (currentRoute === "/leaderboard" || currentRoute === "/not-found") return "/dashboard";
   if (currentRoute === "/dashboard") return null;
-  return "/dashboard" as RoutePath;
+  return "/dashboard";
 }
 
-/**
- * Get human-readable breadcrumb labels for each route.
- */
 export function getRouteBreadcrumbLabel(
   route: RoutePath,
   _params: RouteParams = {},
-  _extraContext?: { lessonTitle?: string; achievementTitle?: string; itemName?: string }
+  context?: { lessonTitle?: string; achievementTitle?: string; itemName?: string },
 ): string {
-  switch (route) {
-    case "/login":
-      return "Sign In";
-    case "/dashboard":
-      return "Dashboard";
-    case "/lessons":
-      return "Lessons";
-    case "/lessons/:lessonId":
-      return _extraContext?.lessonTitle || "Lesson Details";
-    case "/lessons/:lessonId/study":
-      return "Study";
-    case "/achievements":
-      return "Achievements";
-    case "/achievements/:achievementId":
-      return _extraContext?.achievementTitle || "Achievement";
-    case "/shop":
-      return "Shop";
-    case "/shop/:itemId":
-      return _extraContext?.itemName || "Item";
-    case "/profile":
-      return "Profile";
-    case "/profile/stats":
-      return "Stats & History";
-    case "/profile/customization":
-      return "Customization";
-    case "/profile/settings":
-      return "Settings";
-    case "/objectives":
-      return "Daily Goals";
-    case "/objectives/:objectiveId":
-      return "Objective Details";
-    case "/leaderboard":
-      return "Leaderboard";
-    default:
-      return "Home";
-  }
+  const labels: Partial<Record<RoutePath, string>> = {
+    "/login": "Sign In", "/dashboard": "Dashboard", "/study/:langPair": "Study",
+    "/lessons": "Lessons", "/lessons/:lessonId/study": "Study", "/achievements": "Achievements",
+    "/shop": "Shop", "/profile": "Profile", "/profile/stats": "Stats & History",
+    "/profile/customization": "Customization", "/profile/settings": "Settings",
+    "/objectives": "Daily Goals", "/objectives/:objectiveId": "Objective Details",
+    "/leaderboard": "Leaderboard", "/not-found": "Not Found",
+  };
+  if (route === "/lessons/:lessonId") return context?.lessonTitle || "Lesson Details";
+  if (route === "/achievements/:achievementId") return context?.achievementTitle || "Achievement";
+  if (route === "/shop/:itemId") return context?.itemName || "Item";
+  return labels[route] ?? "Home";
 }

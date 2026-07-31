@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
-import { navigate } from "../../lib/router";
+import { useState } from "react";
+import { buildRoutePath, navigate } from "../../lib/router";
 import { FallbackGlyph } from "../shared/FallbackGlyph";
 import { CoinIcon, LockedIcon } from "../shared/icons";
 import type { DashboardData } from "../../data/account/repository";
-import { useAppContext } from "../../data/AppContext";
-import type { UserAchievement } from "../../data/types";
+import { useAppState } from "../../data/AppContext";
 
 interface ShopBrowseProps {
   dashboardData: DashboardData;
@@ -14,26 +13,22 @@ type CategoryFilter = "all" | "profile_picture" | "profile_border" | "profile_ac
 type OwnershipFilter = "all" | "owned" | "available";
 
 export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
-  const { userId, achievementRepo } = useAppContext();
+  const { snapshot } = useAppState();
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [ownershipFilter, setOwnershipFilter] = useState<OwnershipFilter>("all");
   const [sortBy, setSortBy] = useState<"price_asc" | "price_desc" | "name">("price_asc");
-  const [userAchievements, setUserAchievements] = useState<UserAchievement[]>([]);
-
-  useEffect(() => {
-    achievementRepo.getUserAchievements(userId).then(setUserAchievements).catch(console.error);
-  }, [userId, achievementRepo]);
-
-  const earnedIds = new Set(userAchievements.map((a) => a.achievementId));
-  const userTokens = dashboardData.profile.tokens;
+  const earnedIds = new Set(snapshot.achievements.map((achievement) => achievement.achievementId));
+  const ownedIds = new Set(snapshot.inventory.map((record) => record.itemId));
+  const equippedIds = new Set(snapshot.equipped.map((record) => record.itemId));
+  const userTokens = snapshot.profile?.tokens ?? dashboardData.profile.tokens;
 
   const filteredItems = dashboardData.storeItems
     .filter((item) => {
       const categoryMatch = categoryFilter === "all" || item.category === categoryFilter;
       const ownershipMatch =
         ownershipFilter === "all" ||
-        (ownershipFilter === "owned" && item.isOwned) ||
-        (ownershipFilter === "available" && !item.isOwned);
+        (ownershipFilter === "owned" && ownedIds.has(item.storeItemId)) ||
+        (ownershipFilter === "available" && !ownedIds.has(item.storeItemId));
       return categoryMatch && ownershipMatch;
     })
     .sort((a, b) => {
@@ -76,6 +71,7 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
                 Category
               </label>
               <select
+                aria-label="Filter rewards by category"
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value as CategoryFilter)}
                 style={{
@@ -100,6 +96,7 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
                 Status
               </label>
               <select
+                aria-label="Filter rewards by ownership status"
                 value={ownershipFilter}
                 onChange={(e) => setOwnershipFilter(e.target.value as OwnershipFilter)}
                 style={{
@@ -121,6 +118,7 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
                 Sort By
               </label>
               <select
+                aria-label="Sort rewards"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as "price_asc" | "price_desc" | "name")}
                 style={{
@@ -145,22 +143,35 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
           {filteredItems.map((item) => {
             const isAchLocked = item.achievementIdRequired !== null && !earnedIds.has(item.achievementIdRequired);
             const canAfford = userTokens >= item.tokenCost;
+            const isOwned = ownedIds.has(item.storeItemId);
+            const isEquipped = equippedIds.has(item.storeItemId);
 
             return (
-              <div
+              <a
                 key={item.storeItemId}
-                onClick={() => navigate("/shop/:itemId", { itemId: item.storeItemId })}
+                href={buildRoutePath("/shop/:itemId", { itemId: item.storeItemId })}
+                onClick={(event) => {
+                  // Use router navigation for SPA behavior, but allow native-
+                  // navigation (Ctrl/Cmd-click) for link inspection.
+                  if (event.button === 0 && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+                    event.preventDefault();
+                    navigate("/shop/:itemId", { itemId: item.storeItemId });
+                  }
+                }}
                 className="bento-cell"
                 style={{
                   cursor: "pointer",
+                  color: "inherit",
+                  textDecoration: "none",
                   display: "flex",
                   flexDirection: "column",
                   position: "relative",
                   transition: "transform var(--t-base), box-shadow var(--t-base)",
-                  opacity: isAchLocked ? 0.55 : item.isEquipped ? 1 : 0.95,
-                  border: item.isEquipped ? "2px solid var(--accent)" : "1px solid var(--border)",
+                  opacity: isAchLocked ? 0.55 : isEquipped ? 1 : 0.95,
+
+                  border: isEquipped ? "2px solid var(--accent)" : "1px solid var(--border)",
                   overflow: "hidden",
-                }}
+                  }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "translateY(-4px)";
                 }}
@@ -192,7 +203,7 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
                   </div>
                 )}
 
-                {item.isEquipped && (
+                {isEquipped && (
                   <div
                     style={{
                       position: "absolute",
@@ -235,7 +246,7 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
                   <div style={{ fontSize: "0.9rem", fontWeight: 700, color: canAfford ? "var(--accent)" : "var(--muted)", display: "flex", alignItems: "center", gap: "0.3em" }}>
                     {item.tokenCost} <CoinIcon size="0.9em" />
                   </div>
-                  {item.isOwned ? (
+                  {isOwned ? (
                     <span style={{ padding: "0.3rem 0.75rem", borderRadius: "var(--radius-sm)", fontSize: "0.7rem", fontWeight: 700, background: "var(--status-ok-bg)", color: "var(--status-ok)" }}>
                       Owned
                     </span>
@@ -253,7 +264,7 @@ export function ShopBrowse({ dashboardData }: ShopBrowseProps) {
                     </span>
                   )}
                 </div>
-              </div>
+              </a>
             );
           })}
         </div>

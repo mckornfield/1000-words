@@ -14,6 +14,7 @@
  * match/no-match result.
  */
 import { Capacitor } from "@capacitor/core";
+import { getLanguage } from "@1000words/content";
 
 // Web Speech API isn't in TypeScript's built-in DOM lib.
 interface WebSpeechRecognitionResult {
@@ -42,15 +43,8 @@ declare global {
   }
 }
 
-const BCP47_BY_LANG_PAIR: Record<string, string> = {
-  "en-es": "es-ES",
-  "en-zh": "zh-CN",
-  "en-ko": "ko-KR",
-  "en-ja": "ja-JP",
-};
-
 export function bcp47ForLangPair(langPair: string): string {
-  return BCP47_BY_LANG_PAIR[langPair] ?? "en-US";
+  return getLanguage(langPair)?.speechLocale ?? "en-US";
 }
 
 function getWebSpeechRecognitionCtor(): WebSpeechRecognitionCtor | undefined {

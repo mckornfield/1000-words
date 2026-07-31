@@ -1,26 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { appConfig } from "./config/appConfig";
 import { supabase } from "./lib/supabase";
 import { localAccountRepository, type DashboardData } from "./data/account/repository";
-import { computeLevelFromXp } from "./lib/leveling";
+
 import { localAuthRepository } from "./data/auth/repository";
 import { createSupabaseAuthRepository } from "./data/auth/supabaseAuthRepository";
-import { createSupabaseProfileRepository } from "./data/profile/supabaseProfileRepository";
-import { createMockProfileRepository } from "./data/profile/mockProfileRepository";
-import { createSupabaseAchievementRepository } from "./data/achievements/supabaseAchievementRepository";
-import { createMockAchievementRepository } from "./data/achievements/mockAchievementRepository";
-import { createSupabaseInventoryRepository } from "./data/inventory/supabaseInventoryRepository";
-import { createMockInventoryRepository } from "./data/inventory/mockInventoryRepository";
-import { createSupabaseDailyGoalRepository } from "./data/goals/supabaseDailyGoalRepository";
-import { createMockDailyGoalRepository } from "./data/goals/mockDailyGoalRepository";
-import { createSupabaseStatsRepository } from "./data/stats/supabaseStatsRepository";
-import { createMockStatsRepository } from "./data/stats/mockStatsRepository";
-import { createSupabaseLeaderboardRepository } from "./data/leaderboard/supabaseLeaderboardRepository";
-import { createMockLeaderboardRepository } from "./data/leaderboard/mockLeaderboardRepository";
-import { createProgressStore } from "./data/progress";
-import { createMockProgressStore } from "./data/progressStore.mock";
 import { AppContext } from "./data/AppContext";
-import type { AppContextValue, AuthSession } from "./data/types";
+import { createAppServices } from "./data/createAppServices";
+import { createRefreshCoordinator } from "./data/refreshCoordinator";
+import { createDeferredDisposer } from "./data/deferredDisposer";
+import { projectDashboardData } from "./data/projectDashboardData";
+import type { AppContextValue, AuthSession, RefreshState } from "./data/types";
 import { DashboardPage } from "./features/dashboard/DashboardPage";
 import { LoginPage } from "./features/login/LoginPage";
 import { LessonsList } from "./features/lessons/LessonsList";
@@ -40,9 +30,19 @@ import { NavBar } from "./features/shared/NavBar";
 import { ToastProvider } from "./features/shared/Toast";
 import { parseRoute, navigate, getParentRoute, requiresAuth, type ParsedRoute } from "./lib/router";
 
-// ─── Singleton repos created once outside the component ───────────────────────
+// ─── Stable application roots ─────────────────────────────────────────────────
 const supabaseAuthRepo = createSupabaseAuthRepository();
-const supabaseProgressStore = createProgressStore(supabase);
+const staticSeed = localAccountRepository.getDashboardData("Usr-001");
+const EMPTY_REFRESH_STATE: RefreshState = {
+  snapshot: {
+    profile: null, goals: [], achievements: [], inventory: [], equipped: [], stats: [],
+    leaderboard: { entries: [], currentUser: null },
+  },
+  pending: new Set(),
+  errors: {},
+  versions: { profile: 0, goals: 0, achievements: 0, inventory: 0, equipped: 0, stats: 0, leaderboard: 0 },
+};
+const subscribeNoop = () => () => {};
 
 // ─── App shell ────────────────────────────────────────────────────────────────
 export function App() {
@@ -97,100 +97,80 @@ export function App() {
     if (session && currentRoute.path === "/login") { navigate("/dashboard"); return; }
   }, [session, currentRoute, authReady]);
 
-  // Dashboard data. In demo mode this is entirely fixture-driven (synchronous).
-  // In Supabase mode, the fixture still supplies the *static catalog* (lessons,
-  // achievement/store definitions — genuinely shared, not per-user), but
-  // `profile` gets overwritten with the real signed-in user's data below —
-  // it used to leak the fixture's hardcoded "demo" profile to every real user.
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  // One graph per primitive mode + authenticated identity. Route changes and
+  // refreshed snapshots cannot recreate repositories.
+  const services = useMemo(() => session ? createAppServices({
+    mode: isDemo ? "demo" : "supabase",
+    userId: session.userId,
+    seedData: staticSeed,
+    client: isDemo ? undefined : supabase,
+  }) : null, [isDemo, session?.userId]);
+
+  const servicesLifecycle = useMemo(
+    () => services ? createDeferredDisposer(() => services.dispose()) : null,
+    [services],
+  );
+  useEffect(() => {
+    servicesLifecycle?.retain();
+    return () => servicesLifecycle?.release();
+  }, [servicesLifecycle]);
+
+  const coordinator = useMemo(
+    () => services ? createRefreshCoordinator(services) : null,
+    [services],
+  );
+  const coordinatorLifecycle = useMemo(
+    () => coordinator ? createDeferredDisposer(() => coordinator.dispose()) : null,
+    [coordinator],
+  );
+  useEffect(() => {
+    coordinatorLifecycle?.retain();
+    return () => coordinatorLifecycle?.release();
+  }, [coordinatorLifecycle]);
+  const refreshState = useSyncExternalStore(
+    coordinator?.subscribe ?? subscribeNoop,
+    coordinator?.getState ?? (() => EMPTY_REFRESH_STATE),
+    coordinator?.getState ?? (() => EMPTY_REFRESH_STATE),
+  );
 
   useEffect(() => {
-    if (!session) { setDashboardData(null); return; }
+    if (!coordinator) return;
+    void coordinator.refresh(["profile", "goals", "achievements", "inventory", "equipped", "stats", "leaderboard"]);
+  }, [coordinator]);
 
-    if (isDemo) {
-      try {
-        setDashboardData(localAccountRepository.getDashboardData(session.userId));
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Unknown error loading account data.";
-        console.error(`[App] Failed to load dashboard data:`, err);
-        setDataError(`Unable to load your account data. ${message}`);
-        setDashboardData(null);
-      }
-      return;
-    }
+  useEffect(() => {
+    if (refreshState.errors.profile) setDataError("Your account data could not be loaded. Please sign out and try again.");
+  }, [refreshState.errors.profile]);
 
-    let cancelled = false;
-    (async () => {
-      try {
-        const fixture = localAccountRepository.getDashboardData("Usr-001");
-        const real = await createSupabaseProfileRepository().getProfile(session.userId);
-        if (cancelled) return;
-        const { profileLevel, xpToNextLevel } = computeLevelFromXp(real.xp);
-        setDashboardData({
-          ...fixture,
-          profile: {
-            ...fixture.profile,
-            userId: session.userId,
-            displayName: real.displayName || session.email.split("@")[0] || "Learner",
-            email: session.email,
-            phone: "",
-            bio: real.bio,
-            // Not stored server-side; the Settings UI already labels this "Auto-detected".
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            xp: real.xp,
-            tokens: real.tokens,
-            streakDays: real.streakCount,
-            profileLevel,
-            xpToNextLevel,
-            themePreference: real.settings.themePreference,
-            lastActiveDate: real.lastActiveDate ?? fixture.profile.lastActiveDate,
-            joinedDate: real.createdAt ?? fixture.profile.joinedDate,
-          },
-        });
-      } catch (err) {
-        if (cancelled) return;
-        const message = err instanceof Error ? err.message : "Unknown error loading account data.";
-        console.error(`[App] Failed to load dashboard data:`, err);
-        setDataError(`Unable to load your account data. ${message}`);
-        setDashboardData(null);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [session, isDemo]);
+  const dashboardData = useMemo((): DashboardData | null => {
+    if (!session) return null;
+    return projectDashboardData({ session, seed: staticSeed, refreshState });
+  }, [session, refreshState]);
 
-  // Avatar from fixture profile.
   const avatarSrc = useMemo(() => {
-    if (!dashboardData) return "";
-    try { return localAccountRepository.decodeProfileAvatar(dashboardData.profile); }
+    try { return dashboardData ? localAccountRepository.decodeProfileAvatar(dashboardData.profile) : ""; }
     catch { return ""; }
   }, [dashboardData]);
 
-  // Build the AppContext value once session + dashboardData are available.
   const appContextValue = useMemo((): AppContextValue | null => {
-    if (!session || !dashboardData) return null;
-    if (isDemo) {
-      return {
-        userId: session.userId,
-        progressStore: createMockProgressStore(),
-        profileRepo: createMockProfileRepository(dashboardData.profile),
-        achievementRepo: createMockAchievementRepository(dashboardData.achievements),
-        inventoryRepo: createMockInventoryRepository(dashboardData.storeItems),
-        goalRepo: createMockDailyGoalRepository(dashboardData.dailyGoals),
-        statsRepo: createMockStatsRepository(),
-        leaderboardRepo: createMockLeaderboardRepository(session.userId),
-      };
-    }
+    if (!services || !coordinator) return null;
     return {
-      userId: session.userId,
-      progressStore: supabaseProgressStore,
-      profileRepo: createSupabaseProfileRepository(),
-      achievementRepo: createSupabaseAchievementRepository(),
-      inventoryRepo: createSupabaseInventoryRepository(),
-      goalRepo: createSupabaseDailyGoalRepository(),
-      statsRepo: createSupabaseStatsRepository(),
-      leaderboardRepo: createSupabaseLeaderboardRepository(),
+      userId: services.userId,
+      services,
+      coordinator,
+      state: refreshState,
+      refresh: coordinator.refresh,
+      patchSnapshot: coordinator.patch,
+      progressStore: services.progressStore,
+      studyRepo: services.studyRepo,
+      profileRepo: services.profileRepo,
+      achievementRepo: services.achievementRepo,
+      inventoryRepo: services.inventoryRepo,
+      goalRepo: services.goalRepo,
+      statsRepo: services.statsRepo,
+      leaderboardRepo: services.leaderboardRepo,
     };
-  }, [session, dashboardData, isDemo]);
+  }, [services, coordinator, refreshState]);
 
   async function signUp(email: string, password: string): Promise<void> {
     setDataError(null);
@@ -239,7 +219,7 @@ export function App() {
   }
 
   if (!dashboardData || !appContextValue) {
-    return <LoginPage config={appConfig} onSignIn={signIn} onSignUp={isDemo ? undefined : signUp} />;
+    return <main aria-busy="true" style={{ display: "grid", placeItems: "center", minHeight: "100dvh" }}>Loading your account…</main>;
   }
 
   const hideNav = currentRoute.path === "/study/:langPair" || currentRoute.path === "/lessons/:lessonId/study";
@@ -292,8 +272,18 @@ export function App() {
         return <ObjectivesHub dashboardData={data} />;
       case "/leaderboard":
         return <LeaderboardPage dashboardData={data} />;
+      case "/not-found":
+        return (
+          <main style={{ display: "grid", placeItems: "center", minHeight: "70dvh", padding: "2rem", textAlign: "center" }}>
+            <div>
+              <h1>Page not found</h1>
+              <p style={{ color: "var(--muted)" }}>This address does not match a page in 1000 Words.</p>
+              <button onClick={() => navigate("/dashboard")}>Return to dashboard</button>
+            </div>
+          </main>
+        );
       default:
-        return <DashboardPage dashboardData={data} avatarSrc={avatarSrc} onSignOut={signOut} />;
+        return null;
     }
   }
 

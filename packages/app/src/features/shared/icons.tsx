@@ -6,6 +6,7 @@
  * identically everywhere regardless of any system font.
  */
 import type { CSSProperties, ReactElement } from "react";
+import { LANGUAGE_REGISTRY, type LanguageIconKey } from "@1000words/content";
 
 interface IconProps {
   size?: number | string;
@@ -246,9 +247,13 @@ export function SpinnerIcon({ size, style }: IconProps) {
 
 export type IconComponent = (props: IconProps) => ReactElement;
 
-export const FLAG_ICONS: Record<string, IconComponent> = {
-  "en-es": FlagES,
-  "en-zh": FlagCN,
-  "en-ko": FlagKR,
-  "en-ja": FlagJP,
+export const ICON_BY_KEY: Record<LanguageIconKey, IconComponent> = {
+  "flag-es": FlagES,
+  "flag-cn": FlagCN,
+  "flag-kr": FlagKR,
+  "flag-jp": FlagJP,
 };
+
+export const FLAG_ICONS: Record<string, IconComponent> = Object.fromEntries(
+  LANGUAGE_REGISTRY.map((language) => [language.id, ICON_BY_KEY[language.iconKey]]),
+);
