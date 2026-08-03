@@ -27,6 +27,8 @@ Use this checklist for every release candidate. A checked item must link to dura
 
 ## Supabase
 
+- [ ] Local preflight used `pnpm review` without `REVIEW_SUPABASE=off` so Supabase checks were executed (or an explicit failure was investigated).
+  - Evidence: `________________`
 - [ ] `supabase start` and `supabase db reset` succeeded from the candidate migrations.
   - Evidence: `________________`
 - [ ] Dedicated RLS/RPC/idempotency suites passed with **zero skipped tests**. The release workflow rejects pending/skipped integration tests.

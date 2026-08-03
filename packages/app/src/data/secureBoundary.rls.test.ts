@@ -3,6 +3,14 @@ import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { StudyCompletionResultSchema } from "./rpcSchemas";
+import {
+  hasSupabaseTestStack,
+  logSupabaseTestSkip,
+  SUPABASE_TEST_ANON_KEY,
+  SUPABASE_TEST_SERVICE_ROLE_KEY,
+  SUPABASE_TEST_URL,
+  supabaseTestSkipReason,
+} from "./supabaseTestEnv";
 
 const migrationDirectory = resolve(process.cwd(), "../../supabase/migrations");
 const correctivePath = resolve(migrationDirectory, "20260726020000_correct_secure_domain_boundary.sql");
@@ -122,15 +130,11 @@ describe("secure Supabase domain boundary migration", () => {
   });
 });
 
-const URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-const ANON = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const hasStack = Boolean(URL && ANON && SERVICE);
 const PASSWORD = "secure-boundary-test-password-1!";
 const suffix = Date.now();
 
 function anonClient(): SupabaseClient {
-  return createClient(URL!, ANON!, { auth: { persistSession: false, autoRefreshToken: false } });
+  return createClient(SUPABASE_TEST_URL!, SUPABASE_TEST_ANON_KEY!, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
 async function provisionUser(admin: SupabaseClient, email: string) {
@@ -148,13 +152,19 @@ const state = {
   lapses: 0, state: 2, lastReview: new Date().toISOString(),
 };
 
-describe.skipIf(!hasStack)("secure domain commands against local Supabase", () => {
+logSupabaseTestSkip("secure domain commands against local Supabase");
+
+describe.skipIf(!hasSupabaseTestStack)(
+  hasSupabaseTestStack
+    ? "secure domain commands against local Supabase"
+    : `secure domain commands against local Supabase (${supabaseTestSkipReason})`,
+  () => {
   let admin: SupabaseClient;
   let a: Awaited<ReturnType<typeof provisionUser>>;
   let b: Awaited<ReturnType<typeof provisionUser>>;
 
   beforeAll(async () => {
-    admin = createClient(URL!, SERVICE!, { auth: { persistSession: false, autoRefreshToken: false } });
+    admin = createClient(SUPABASE_TEST_URL!, SUPABASE_TEST_SERVICE_ROLE_KEY!, { auth: { persistSession: false, autoRefreshToken: false } });
     a = await provisionUser(admin, `secure-a-${suffix}@test.local`);
     b = await provisionUser(admin, `secure-b-${suffix}@test.local`);
     const seeded = await admin.from("profiles").update({ tokens: 500, time_zone: "America/Los_Angeles" }).eq("user_id", a.id);

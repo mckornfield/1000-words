@@ -2,7 +2,7 @@
  * Runtime configuration resolved from Vite environment variables.
  * Values are read once at module load time and are immutable during the session.
  *
- * Environment variable reference (see packages/app/.env.example):
+ * Environment variable reference (see repo-root .env.example):
  *   VITE_DEMO_LOGIN=true              — enables demo credentials and pre-fills login.
  *   VITE_FEATURE_REVERSE_STUDY=false  — exposes the English-to-target study direction.
  */
