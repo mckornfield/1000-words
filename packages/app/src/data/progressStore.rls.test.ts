@@ -1,16 +1,20 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { StudyCompletionResultSchema } from "./rpcSchemas";
+import {
+  hasSupabaseTestStack,
+  logSupabaseTestSkip,
+  SUPABASE_TEST_ANON_KEY,
+  SUPABASE_TEST_SERVICE_ROLE_KEY,
+  SUPABASE_TEST_URL,
+  supabaseTestSkipReason,
+} from "./supabaseTestEnv";
 
 /**
  * Live integration coverage for the retired table-write boundary and the four
  * authenticated domain commands that replace it. The suite is conditional for
  * ordinary unit runs; CI supplies a reset local stack and rejects every skip.
  */
-const URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-const ANON = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const hasStack = Boolean(URL && ANON && SERVICE);
 const PASSWORD = "rls-test-password-1!";
 const suffix = Date.now();
 
@@ -28,18 +32,24 @@ const nextState = {
 };
 
 function anonClient(): SupabaseClient {
-  return createClient(URL!, ANON!, {
+  return createClient(SUPABASE_TEST_URL!, SUPABASE_TEST_ANON_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
 
-describe.skipIf(!hasStack)("secure progress and economy domain boundary", () => {
+logSupabaseTestSkip("secure progress and economy domain boundary");
+
+describe.skipIf(!hasSupabaseTestStack)(
+  hasSupabaseTestStack
+    ? "secure progress and economy domain boundary"
+    : `secure progress and economy domain boundary (${supabaseTestSkipReason})`,
+  () => {
   let admin: SupabaseClient;
   let userA: { id: string; client: SupabaseClient };
   let userB: { id: string; client: SupabaseClient };
 
   beforeAll(async () => {
-    admin = createClient(URL!, SERVICE!, {
+    admin = createClient(SUPABASE_TEST_URL!, SUPABASE_TEST_SERVICE_ROLE_KEY!, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
     userA = await provisionUser(admin, `rls-a-${suffix}@test.local`);

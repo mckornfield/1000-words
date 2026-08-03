@@ -16,9 +16,33 @@ supabase db reset       # applies migrations/ from scratch into the local db
 (service_role) key — copy them into the repo-root `.env` (see `.env.example`).
 That single file is read by both the Vite app and the test setup.
 
+`SUPABASE_SERVICE_ROLE_KEY` is required for local RLS/RPC integration tests and
+`pnpm --filter @1000words/app supabase:smoke`.
+
 If `supabase start` complains about `config.toml` on your CLI version, run
 `supabase init` to regenerate it; the files under `migrations/` are the source of
 truth and should be preserved.
+
+## Local verification gate
+
+`pnpm review` now includes Supabase checks by default:
+
+- starts local Supabase and resets migrations,
+- runs the dedicated RLS/RPC/idempotency suites with zero-skip enforcement,
+- runs the Supabase smoke script.
+
+If you intentionally want a fast non-Supabase pass, set `REVIEW_SUPABASE=off`.
+The review output will still include an explicit warning row so skips are never
+mistaken for integration success.
+
+## Troubleshooting
+
+- `supabase` command missing: install Supabase CLI.
+- Docker daemon unavailable: start Docker, then rerun.
+- Missing env vars: populate repo-root `.env` from `.env.example`.
+- RLS suites skipped: ensure `SUPABASE_URL`/`VITE_SUPABASE_URL`,
+  `SUPABASE_ANON_KEY`/`VITE_SUPABASE_ANON_KEY`, and
+  `SUPABASE_SERVICE_ROLE_KEY` are all present.
 
 ## Schema
 

@@ -9,6 +9,10 @@ _Last reconciled: 2026-07-26_
 - `packages/app/src/test/createTestServices.ts` and `renderApp.tsx` provide deterministic context/render helpers.
 - Playwright specs live in `e2e/`.
 - The app test script is `vitest run`; it no longer uses `--passWithNoTests`.
+- `pnpm review` now enforces local Supabase integration checks by default
+	(stack start/reset, RLS/RPC suites with zero skips, and smoke).
+	Set `REVIEW_SUPABASE=off` only for an intentional fast pass; the output still
+	reports an explicit warning row so skipped integration is never hidden.
 
 ## Current Focused Coverage
 

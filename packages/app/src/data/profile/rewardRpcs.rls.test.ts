@@ -1,15 +1,19 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import {
+  hasSupabaseTestStack,
+  logSupabaseTestSkip,
+  SUPABASE_TEST_ANON_KEY,
+  SUPABASE_TEST_SERVICE_ROLE_KEY,
+  SUPABASE_TEST_URL,
+  supabaseTestSkipReason,
+} from "../supabaseTestEnv";
 
-const URL = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-const ANON = process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
-const SERVICE = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const hasStack = Boolean(URL && ANON && SERVICE);
 const PASSWORD = "reward-rpc-test-password-1!";
 const suffix = Date.now();
 
 function anonClient(): SupabaseClient {
-  return createClient(URL!, ANON!, {
+  return createClient(SUPABASE_TEST_URL!, SUPABASE_TEST_ANON_KEY!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 }
@@ -30,13 +34,19 @@ async function provisionUser(
   return { id: data.user.id, client };
 }
 
-describe.skipIf(!hasStack)("retired raw reward RPC boundary", () => {
+logSupabaseTestSkip("retired raw reward RPC boundary");
+
+describe.skipIf(!hasSupabaseTestStack)(
+  hasSupabaseTestStack
+    ? "retired raw reward RPC boundary"
+    : `retired raw reward RPC boundary (${supabaseTestSkipReason})`,
+  () => {
   let admin: SupabaseClient;
   let userA: { id: string; client: SupabaseClient };
   let userB: { id: string; client: SupabaseClient };
 
   beforeAll(async () => {
-    admin = createClient(URL!, SERVICE!, {
+    admin = createClient(SUPABASE_TEST_URL!, SUPABASE_TEST_SERVICE_ROLE_KEY!, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
     userA = await provisionUser(admin, `reward-a-${suffix}@test.local`);
